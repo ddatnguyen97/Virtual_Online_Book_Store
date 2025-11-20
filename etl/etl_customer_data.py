@@ -69,8 +69,8 @@ if __name__ == "__main__":
     }
     connection_string = f"postgresql://{db_config['username']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['db_name']}"
 
-    data_file = 'data_source\Customer Raw Data.csv'
-    df = get_data(data_file)
+    file_path = 'data_source\Customer Raw Data.csv'
+    df = get_data(file_path)
     transformed_df = transform_data(df)
 
     table_name = 'customer_info'

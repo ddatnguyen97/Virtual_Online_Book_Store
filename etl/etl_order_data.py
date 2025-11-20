@@ -9,15 +9,25 @@ from io import StringIO
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-def fetch_data(response):
+# def fetch_data(response):
+#     try:
+#         data = response.text
+#         df = pd.read_csv(StringIO(data))
+#         return df
+#     except Exception as e:
+#         logging.error(f"Error fetching data: {e}")
+#         return pd.DataFrame()
+
+def get_data(file_path):
     try:
-        data = response.text
-        df = pd.read_csv(StringIO(data))
+        df = pd.read_csv(file_path)
+        logging.info(f"Successfully read customer data from {file_path}")
         return df
-    except Exception as e:
-        logging.error(f"Error fetching data: {e}")
-        return pd.DataFrame()
     
+    except Exception as e:
+        logging.error(f"Error reading customer data: {e}")
+        return pd.DataFrame()
+
 def transform_data(df):
     try:
         df['order_date'] = pd.to_datetime(df['order_date'], errors='coerce')
@@ -60,12 +70,13 @@ if __name__ == "__main__":
     }
     connection_string = f"postgresql://{db_config['username']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['db_name']}"
 
-    mockaroo_api_key = os.getenv('MOCKAROO_API_KEY')
-    mockaroo_schema_id = os.getenv('MOCKAROO_SCHEMA_ID')
-    mockaroo_url = f"https://api.mockaroo.com/api/{mockaroo_schema_id}?count=40&key={mockaroo_api_key}"
+    # mockaroo_api_key = os.getenv('MOCKAROO_API_KEY')
+    # mockaroo_schema_id = os.getenv('MOCKAROO_SCHEMA_ID')
+    # mockaroo_url = f"https://api.mockaroo.com/api/{mockaroo_schema_id}?key={mockaroo_api_key}&format=csv"
 
-    response = requests.get(mockaroo_url)
-    raw_df = fetch_data(response)
+    # response = requests.get(mockaroo_url)
+    file_path = 'data_source\Orders Raw Data.csv'
+    raw_df = get_data(file_path)
     # print(raw_df.head())
     transformed_df = transform_data(raw_df)
     load_data_to_db(transformed_df, table_name, connection_string)

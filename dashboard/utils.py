@@ -3,6 +3,8 @@ from data import extract_data
 import pandas as pd
 
 def format_revenue(n):
+    if n is None:
+        return "0"
     if n >= 1_000_000_000:
         return f"{n/1_000_000_000:.2f}B"
     elif n >= 1_000_000:
@@ -32,9 +34,18 @@ def get_min_date(connection_string):
     result = extract_data(query, connection_string).iloc[0].min_date
     return pd.to_datetime(result)
 
-def get_time_interval(connection_string):
-    max_date = get_max_date(connection_string)
-    min_date = get_min_date(connection_string)
-    if (max_date - min_date).days == 0:
-        return max_date - timedelta(days=1)
-    
+def get_previous_date(selected_date, connection_string):
+    query = f"""
+        select
+            date
+        from
+            dim_date
+        where
+            date < '{selected_date}'
+        order by
+            date desc
+        limit 1       
+    """
+    result = extract_data(query, connection_string).iloc[0].date
+    return result
+
