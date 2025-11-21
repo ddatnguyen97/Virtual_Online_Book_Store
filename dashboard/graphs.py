@@ -28,16 +28,21 @@ def create_data_metric(label, current_value, previous_value):
         delta_color="normal",
     )
 
-def create_line_chart(data, x, y, title):
+def create_line_chart(data, x, y):
     return st.line_chart(
         data=data,
         x=x,
         y=y,
-        title=title,
-        width=0,
-        height=0,
-        use_container_width=True,
-    )
+        )
+
+def create_bar_chart(data, x, y, horizontal=False, height=400):
+    return st.bar_chart(
+        data=data,
+        x=x,
+        y=y,
+        horizontal=horizontal,
+        height=height
+        )
 
 def create_choropleth_map(data, locations, color, title, geojson, locationmode='ISO-3'):
     fig = px.choropleth(
@@ -62,9 +67,14 @@ def create_folium_map(data,
                       value_columns=None,        
                       tooltip_fields=None,
                       key_on=None,
-                      legend_name=None
+                      legend_name=None,
+                    #   container_height=None,
             ):
-    choropleth_map = folium.Map(location=location, zoom_start=zoom_start, tiles=tiles)
+    choropleth_map = folium.Map(location=location,
+                                 zoom_start=zoom_start,
+                                 tiles=tiles,
+    )
+
     folium.Choropleth(
     geo_data=geo_data,
     name="choropleth",
@@ -99,6 +109,9 @@ def create_folium_map(data,
         )
     ).add_to(choropleth_map)
 
-    return st_folium(choropleth_map, height=450, width="100%")
+    return st_folium(choropleth_map, 
+                     height="400",
+                     width="100%",
+                          )
 
     

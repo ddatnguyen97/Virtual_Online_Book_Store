@@ -34,18 +34,15 @@ def get_min_date(connection_string):
     result = extract_data(query, connection_string).iloc[0].min_date
     return pd.to_datetime(result)
 
-def get_previous_date(selected_date, connection_string):
-    query = f"""
-        select
-            date
-        from
-            dim_date
-        where
-            date < '{selected_date}'
-        order by
-            date desc
-        limit 1       
-    """
-    result = extract_data(query, connection_string).iloc[0].date
-    return result
+def get_week_range(selected_date):
+    selected_date = pd.to_datetime(selected_date)
+    start_of_week = selected_date - timedelta(days=selected_date.weekday())  
+    end_of_week = start_of_week + timedelta(days=6) 
+    return start_of_week.date(), end_of_week.date()
+
+def get_previous_week_range(selected_date):
+    curr_week_start, curr_week_end = get_week_range(selected_date)
+    prev_week_end = curr_week_start - pd.Timedelta(days=1)
+    prev_week_start = prev_week_end - pd.Timedelta(days=6)
+    return prev_week_start, prev_week_end
 
