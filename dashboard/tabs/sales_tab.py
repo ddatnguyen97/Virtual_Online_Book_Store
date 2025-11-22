@@ -33,8 +33,8 @@ def sales_tab(selected_date, connection_string  ):
         st.error("No grand total row returned. Check SQL or data.")
         st.stop()
 
-    curr_summary = curr_sales_df.query("region.isna() and city_province.isna()").iloc[0]
-    prev_summary = prev_sales_df.query("region.isna() and city_province.isna()").iloc[0]
+    curr_summary = curr_sales_df.query("region.isna() and city_province.isna() and date.isna()").iloc[0]
+    prev_summary = prev_sales_df.query("region.isna() and city_province.isna() and date.isna()").iloc[0]
 
     current_date_revenue = curr_summary.total_revenue
     previous_date_revenue = prev_summary.total_revenue
@@ -46,7 +46,6 @@ def sales_tab(selected_date, connection_string  ):
     prev_avg_price_per_order = prev_summary.avg_order_value
 
     with st.container():
-        # col1, col2, col3, col4, col5 = st.columns(5)
         col1, col3, col5 = st.columns(3)
         with col1:
             create_data_metric("Total Revenue", current_date_revenue, previous_date_revenue)
@@ -57,20 +56,25 @@ def sales_tab(selected_date, connection_string  ):
         with col5:
             create_data_metric("Avg Order Value", curr_avg_price_per_order, prev_avg_price_per_order)
 
-    sales_by_date_df = get_sales_by_date(curr_week_start_date, curr_week_end_date, connection_string)
-    sales_by_date_df["date"] = pd.to_datetime(sales_by_date_df["date"]).dt.date
-    sales_by_date_df["date"] = sales_by_date_df["date"].astype(str)
-
+    sales_by_date_df = curr_sales_df.query("region.isna() and city_province.isna()").copy()
+    sales_by_date_df = sales_by_date_df[sales_by_date_df["date"].notna()]
+    # sales_by_date_df["date"] = pd.to_datetime(sales_by_date_df["date"])
+    
     with st.container():
         st.subheader("Sales by Date")
         create_line_chart(
             sales_by_date_df,
             "date",
             "total_revenue",
+            height=400,
+            x_label="Date",
+            y_label="Revenue",
+            markers=True
         )
 
-    region_sales_df = curr_sales_df.query("region.notna() and city_province.isna()").copy()
     revenue_by_city = curr_sales_df.query("city_province.notna()").copy()
+    revenue_by_region = curr_sales_df.query("region.notna()").copy()
+
     value_columns=["city_province", "total_revenue"]
     tooltip_fields=["TinhThanh"]  
     key_on="feature.properties.TinhThanh"
@@ -87,12 +91,12 @@ def sales_tab(selected_date, connection_string  ):
         "Mekong Delta"
     ]
 
-    region_sales_df["region"] = pd.Categorical(
-        region_sales_df["region"],
+    revenue_by_region["region"] = pd.Categorical(
+        revenue_by_region["region"],
         categories=region_order,
         ordered=True
     )
-    region_sales_df = region_sales_df.sort_values("region")
+    revenue_by_region = revenue_by_region.sort_values("region", ascending=False)
 
     with open(provinces_json_path, "r", encoding="utf-8") as f:
         provinces_json = json.load(f)
@@ -113,8 +117,12 @@ def sales_tab(selected_date, connection_string  ):
         with col2:
             st.subheader("Sales by Region")
             create_bar_chart(
-                region_sales_df,
-                x="region",
-                y="total_revenue",
-                horizontal=True,
+                revenue_by_region,
+                y="region",
+                x="total_revenue",
+                # horizontal=True,
+                orientation="h",
+                height=400,
+                x_label="Region",
+                y_label="Revenue"
             )

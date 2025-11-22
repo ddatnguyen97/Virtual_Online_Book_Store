@@ -12,6 +12,7 @@ connection_string = get_connection_string()
 def get_sales_summary(start_date, end_date, connection_string):
     query = f"""
         select
+            dd.date as date,
             dr.name as region,
             dcp.name as city_province,
             sum(bi.retail_price_amount * oi.order_quantity) as total_revenue,
@@ -33,33 +34,12 @@ def get_sales_summary(start_date, end_date, connection_string):
             (dd.date >= '{start_date}' and dd.date <= '{end_date}')
         group by
             grouping sets (
-                (region,
-                city_province),
-                (region),
+                (region, city_province, date),
+                (region, date),
+                (date),
                 ()
             )
     """
     result = extract_data(query, connection_string)
     return result
-
-def get_sales_by_date(start_date, end_date, connection_string):
-    query = f"""
-        select
-            dd.date as date,
-            sum(bi.retail_price_amount * oi.order_quantity) as total_revenue
-        from
-            orders_info oi
-        join
-            book_info bi on oi.book_id = bi.book_id
-        join 
-            dim_date dd on oi.date_id = dd.date_id
-        where
-            (dd.date >= '{start_date}' and dd.date <= '{end_date}')
-        group by
-            date
-    """
-    result = extract_data(query, connection_string)
-    result["date"] = pd.to_datetime(result["date"])
-    return result
-
 

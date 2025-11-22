@@ -19,7 +19,6 @@ def create_data_metric(label, current_value, previous_value):
         sign = "-" if delta_value < 0 else "+"
         formatted_delta = f"{sign}{abs(delta_value) * 100:.2f} %"
 
-
     return st.metric(
         label=label,
         value=formatted_current,
@@ -28,21 +27,62 @@ def create_data_metric(label, current_value, previous_value):
         delta_color="normal",
     )
 
-def create_line_chart(data, x, y):
-    return st.line_chart(
-        data=data,
-        x=x,
-        y=y,
-    )
+# def create_line_chart(data, x, y, x_label=None, y_label=None, color=None, height=None):
+#     return st.line_chart(
+#         data=data,
+#         x=x,
+#         y=y,
+#         x_label=x_label,
+#         y_label=y_label,
+#         color=color,
+#         height=height
+#     )
 
-def create_bar_chart(data, x, y, horizontal=False, height=400):
-    return st.bar_chart(
-        data=data,
+def create_line_chart(data, x, y, x_label=None, y_label=None, color=None, height=None, markers=None):
+    chart = px.line(
+        data,
         x=x,
         y=y,
-        horizontal=horizontal,
-        height=height
+        color=color,
+        height=height,
+        markers=markers
     )
+    chart.update_layout(
+        xaxis_title=x_label,
+        yaxis_title=y_label,
+    )
+    chart.update_xaxes(
+        tickformat="%m-%d",
+        type="category"
+    ) 
+    return st.plotly_chart(chart)
+
+# def create_bar_chart(data, x, y, horizontal=False, height=None, x_label=None, y_label=None, color=None):
+#     return st.bar_chart(
+#         data=data,
+#         x=x,
+#         y=y,
+#         horizontal=horizontal,
+#         height=height,
+#         x_label=x_label,
+#         y_label=y_label,
+#         color=color
+#     )
+
+def create_bar_chart(data, x, y, x_label=None, y_label=None, color=None, height=None, orientation=None):
+    chart = px.bar(
+        data,
+        x=x,
+        y=y,
+        color=color,
+        height=height,
+        orientation=orientation
+    )
+    chart.update_layout(
+        xaxis_title=x_label,
+        yaxis_title=y_label,
+    )
+    return st.plotly_chart(chart)
 
 def create_choropleth_map(data, locations, color, title, geojson, locationmode='ISO-3'):
     fig = px.choropleth(
