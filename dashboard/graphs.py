@@ -33,7 +33,7 @@ def create_line_chart(data, x, y):
         data=data,
         x=x,
         y=y,
-        )
+    )
 
 def create_bar_chart(data, x, y, horizontal=False, height=400):
     return st.bar_chart(
@@ -42,7 +42,7 @@ def create_bar_chart(data, x, y, horizontal=False, height=400):
         y=y,
         horizontal=horizontal,
         height=height
-        )
+    )
 
 def create_choropleth_map(data, locations, color, title, geojson, locationmode='ISO-3'):
     fig = px.choropleth(

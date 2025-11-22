@@ -13,7 +13,6 @@ query_total_customers = f"""
         count(distinct customer_phone) as total_customers
     from
         customer_info
-
 """
 
 metrics_total_customers = extract_data(query_total_customers, connection_string)

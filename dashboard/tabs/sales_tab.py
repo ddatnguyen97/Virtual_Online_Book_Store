@@ -13,8 +13,9 @@ import json
 load_dotenv()
 
 def sales_tab(selected_date, connection_string  ):
-    curr_week_start_date = get_week_range(selected_date)[0]
-    curr_week_end_date = get_week_range(selected_date)[1]
+    curr_week_start_date, curr_week_end_date = get_current_week_range(selected_date)
+    prev_week_start_date, prev_week_end_date = get_previous_week_range(selected_date)
+
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
@@ -24,26 +25,24 @@ def sales_tab(selected_date, connection_string  ):
             st.markdown(f"**Start date:** {curr_week_start_date}")
             st.markdown(f"**End date:** {curr_week_end_date}")
 
-    previous_week_date = get_previous_week_range(selected_date)
+    curr_sales_df = get_sales_summary(curr_week_start_date, curr_week_end_date, connection_string)
+    prev_sales_df = get_sales_summary(prev_week_start_date, prev_week_end_date, connection_string)
 
-    sales_df = get_sales_metrics(selected_date, connection_string)
-    prev_sales_df = get_sales_metrics(previous_week_date, connection_string)
-
-    summary_df = sales_df.query("region.isna() and city_province.isna()")
+    summary_df = curr_sales_df.query("region.isna() and city_province.isna()")
     if summary_df.empty:
         st.error("No grand total row returned. Check SQL or data.")
         st.stop()
 
-    summary = summary_df.iloc[0]
+    curr_summary = curr_sales_df.query("region.isna() and city_province.isna()").iloc[0]
     prev_summary = prev_sales_df.query("region.isna() and city_province.isna()").iloc[0]
 
-    current_date_revenue = summary.total_revenue
+    current_date_revenue = curr_summary.total_revenue
     previous_date_revenue = prev_summary.total_revenue
 
-    current_date_orders = summary.total_orders
+    current_date_orders = curr_summary.total_orders
     previous_date_orders = prev_summary.total_orders
 
-    curr_avg_price_per_order = summary.avg_order_value
+    curr_avg_price_per_order = curr_summary.avg_order_value
     prev_avg_price_per_order = prev_summary.avg_order_value
 
     with st.container():
@@ -58,8 +57,20 @@ def sales_tab(selected_date, connection_string  ):
         with col5:
             create_data_metric("Avg Order Value", curr_avg_price_per_order, prev_avg_price_per_order)
 
-    region_sales_df = sales_df.query("region.notna() and city_province.isna()").copy()
-    revenue_by_city = sales_df.query("city_province.notna()").copy()
+    sales_by_date_df = get_sales_by_date(curr_week_start_date, curr_week_end_date, connection_string)
+    sales_by_date_df["date"] = pd.to_datetime(sales_by_date_df["date"]).dt.date
+    sales_by_date_df["date"] = sales_by_date_df["date"].astype(str)
+
+    with st.container():
+        st.subheader("Sales by Date")
+        create_line_chart(
+            sales_by_date_df,
+            "date",
+            "total_revenue",
+        )
+
+    region_sales_df = curr_sales_df.query("region.notna() and city_province.isna()").copy()
+    revenue_by_city = curr_sales_df.query("city_province.notna()").copy()
     value_columns=["city_province", "total_revenue"]
     tooltip_fields=["TinhThanh"]  
     key_on="feature.properties.TinhThanh"
@@ -89,6 +100,7 @@ def sales_tab(selected_date, connection_string  ):
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
+            st.subheader("Sales by City/Province")
             create_folium_map(
                 revenue_by_city,
                 geo_data=provinces_json,
@@ -99,6 +111,7 @@ def sales_tab(selected_date, connection_string  ):
             )
 
         with col2:
+            st.subheader("Sales by Region")
             create_bar_chart(
                 region_sales_df,
                 x="region",
