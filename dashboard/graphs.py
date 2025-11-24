@@ -27,17 +27,6 @@ def create_data_metric(label, current_value, previous_value):
         delta_color="normal",
     )
 
-# def create_line_chart(data, x, y, x_label=None, y_label=None, color=None, height=None):
-#     return st.line_chart(
-#         data=data,
-#         x=x,
-#         y=y,
-#         x_label=x_label,
-#         y_label=y_label,
-#         color=color,
-#         height=height
-#     )
-
 def create_line_chart(data, x, y, x_label=None, y_label=None, color=None, height=None, markers=None):
     chart = px.line(
         data,
@@ -57,18 +46,6 @@ def create_line_chart(data, x, y, x_label=None, y_label=None, color=None, height
     ) 
     return st.plotly_chart(chart)
 
-# def create_bar_chart(data, x, y, horizontal=False, height=None, x_label=None, y_label=None, color=None):
-#     return st.bar_chart(
-#         data=data,
-#         x=x,
-#         y=y,
-#         horizontal=horizontal,
-#         height=height,
-#         x_label=x_label,
-#         y_label=y_label,
-#         color=color
-#     )
-
 def create_bar_chart(data, x, y, x_label=None, y_label=None, color=None, height=None, orientation=None):
     chart = px.bar(
         data,
@@ -81,6 +58,15 @@ def create_bar_chart(data, x, y, x_label=None, y_label=None, color=None, height=
     chart.update_layout(
         xaxis_title=x_label,
         yaxis_title=y_label,
+    )
+    return st.plotly_chart(chart)
+
+def create_pie_chart(data, names, values, height=None):
+    chart = px.pie(
+        data,
+        names,
+        values,
+        height=height
     )
     return st.plotly_chart(chart)
 
@@ -99,59 +85,30 @@ def create_choropleth_map(data, locations, color, title, geojson, locationmode='
 
     return st.plotly_chart(fig, use_container_width=True)
 
-def create_folium_map(data, 
-                      geo_data,
-                      location=[16, 108],
-                      zoom_start=5,
-                      tiles='cartodbpositron',
-                      value_columns=None,        
-                      tooltip_fields=None,
-                      key_on=None,
-                      legend_name=None,
-                    #   container_height=None,
-            ):
-    choropleth_map = folium.Map(location=location,
-                                 zoom_start=zoom_start,
-                                 tiles=tiles,
-    )
+def create_folium_map_object(data, geo_data, value_columns, key_on, legend_name):
+    choropleth_map = folium.Map(location=[16,108], zoom_start=5, tiles="cartodbpositron")
 
     folium.Choropleth(
-    geo_data=geo_data,
-    name="choropleth",
-    data=data,
-    columns=value_columns,
-    key_on=key_on,
-    fill_color="YlGnBu",
-    fill_opacity=0.7,
-    line_opacity=0.5,
-    legend_name=legend_name,
+        geo_data=geo_data,
+        data=data,
+        columns=value_columns,
+        key_on=key_on,
+        fill_color="YlGnBu",
+        fill_opacity=0.7,
+        line_opacity=0.5,
+        legend_name=legend_name,
     ).add_to(choropleth_map)
 
+    return choropleth_map
+
+def render_folium_map(map_obj, geo_data, tooltip_fields):
     folium.GeoJson(
         geo_data,
-        name="Province Borders",
-        style_function=lambda x: {
-            "fillOpacity": 0,
-            "color": "black",
-            "weight": 1
-        },
+        style_function=lambda x: {"fillOpacity": 0, "color": "black", "weight": 1},
         tooltip=folium.GeoJsonTooltip(
-            fields=tooltip_fields,       
-            aliases=[f"{field}:" for field in tooltip_fields],  
-            sticky=False,
-            labels=True,
-            style="""
-                background-color: white;
-                border: 1px solid black;
-                border-radius: 3px;
-                padding: 2px;
-            """
+            fields=tooltip_fields,
+            aliases=[f"{t}:" for t in tooltip_fields]
         )
-    ).add_to(choropleth_map)
+    ).add_to(map_obj)
 
-    return st_folium(choropleth_map, 
-                     height="400",
-                     width="100%",
-                          )
-
-    
+    return st_folium(map_obj, height=400, width="100%")

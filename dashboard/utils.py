@@ -1,6 +1,11 @@
 from datetime import timedelta
 from data import extract_data
 import pandas as pd
+import json
+import streamlit as st
+
+def safe_divide(a, b):
+    return a / b if b not in [0, None] else 0
 
 def format_revenue(n):
     if n is None:
@@ -46,3 +51,7 @@ def get_previous_week_range(selected_date):
     prev_week_start = prev_week_end - pd.Timedelta(days=6)
     return prev_week_start, prev_week_end
 
+@st.cache_data
+def load_json_file(file_path):
+    with open(file_path, "r", encoding="utf-8") as f:
+        return json.load(f)
