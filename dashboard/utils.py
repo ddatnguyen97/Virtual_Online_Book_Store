@@ -59,3 +59,10 @@ def load_json_file(file_path):
 def clean_col_name(col):
     col = col.replace("_", " ").replace("-", " ")
     return col.title()
+
+def create_date_range(df, start_date, end_date):
+    date_range = pd.date_range(start=start_date, end=end_date)
+    df = df.set_index("date").reindex(date_range)
+    df.index.name = "date"
+    df = df.fillna(0)
+    return df.reset_index()

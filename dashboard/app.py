@@ -32,7 +32,6 @@ st.markdown(
 st.title("Virtual Online Book Store Dashboard")
 with st.sidebar:
     selected_date = display_date(connection_string)
-    # filters = build_filters(df)
 
 with st.container():    
     tab1, tab2, tab3 = st.tabs(["Sales", "Customers", "Products"])

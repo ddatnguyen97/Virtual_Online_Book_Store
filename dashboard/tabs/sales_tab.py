@@ -85,6 +85,11 @@ def sales_tab(selected_date, connection_string  ):
 
     sales_by_date_df = curr_filtered_df.copy()
     sales_by_date = sales_by_date_df.groupby("date")["total_revenue"].sum().reset_index()
+    sales_by_date = create_date_range(
+        sales_by_date,
+        start_date=sales_by_date_df["date"].min(),
+        end_date=sales_by_date_df["date"].max()
+    )
     sales_by_date['dod_growth'] = sales_by_date["total_revenue"].pct_change() * 100
 
     sales_by_date_chart = create_line_chart(
@@ -136,13 +141,13 @@ def sales_tab(selected_date, connection_string  ):
     revenue_by_city_df = curr_filtered_df.copy()
     revenue_by_city = revenue_by_city_df.groupby("city_province")["total_revenue"].sum().reset_index()
     value_columns=["city_province", "total_revenue"]
-    tooltip_fields=["TinhThanh"]  
-    key_on="feature.properties.TinhThanh"
+    tooltip_fields=["ten_tinh"]  
+    key_on="feature.properties.ten_tinh"
     legend_name="Revenue by Province"
     provinces_json_path = os.getenv("GEO_JSON_PATH")
     provinces_json = load_json_file(provinces_json_path)
     
-    revenue_by_region_df = curr_sales_df.copy()
+    revenue_by_region_df = curr_filtered_df.copy()
     revenue_by_region = revenue_by_region_df.groupby("region")["total_revenue"].sum().reset_index()
 
     revenue_by_region_chart = create_bar_chart(
