@@ -2,7 +2,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import folium
 from streamlit_folium import st_folium
-import pandas as pd
+from folium import MacroElement
+from jinja2 import Template
 
 def create_data_metric(label, current_value, previous_value):
     if previous_value == 0 or previous_value is None:

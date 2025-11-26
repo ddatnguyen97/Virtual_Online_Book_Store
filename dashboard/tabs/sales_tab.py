@@ -114,7 +114,7 @@ def sales_tab(selected_date, connection_string  ):
     payment_df = (payment_df.groupby("payment_type")["total_revenue"]
                   .sum()
                   .reset_index()
-                  .sort_index(ascending=False)
+                  .sort_values("payment_type", ascending=True)
             )
     payment_type_chart = create_pie_chart(
                 payment_df,
