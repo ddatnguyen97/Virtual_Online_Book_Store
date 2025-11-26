@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.postgresql import insert
 import logging
+from datetime import date
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +29,28 @@ def transform_data(df):
     except Exception as e:
         logging.error(f"Error transforming data: {e}")
         return pd.DataFrame()
-    
+
+def create_age_group(col):
+    try:
+        today = date.today()
+        age = today.year - col.year
+
+        if (today.month, today.day) < (col.month, col.day):
+            age -= 1
+
+        if age < 18:
+            return "Under 18"
+        elif age <= 22:
+            return "18 - 22"
+        elif age <= 30:
+            return "23 - 30"
+        else:
+            return "Over 30"
+        
+    except Exception as e:
+        logging.error(f"Error creating age group: {e}")
+        return None
+
 def insert_on_conflict_nothing(table, conn, keys, data_iter):
     try:
         data = [dict(zip(keys, row)) for row in data_iter]
@@ -39,7 +61,6 @@ def insert_on_conflict_nothing(table, conn, keys, data_iter):
     except Exception as e:
         logging.error(f'error during insert: {e}')
         raise
-
 
 def load_data_to_db(df, table_name, connection_string, method=insert_on_conflict_nothing):
     try:
@@ -72,6 +93,7 @@ if __name__ == "__main__":
     file_path = 'data_source\Customer Raw Data.csv'
     df = get_data(file_path)
     transformed_df = transform_data(df)
+    transformed_df['age_group'] = transformed_df['dob'].apply(create_age_group)
 
     table_name = 'customer_info'
     load_data_to_db(transformed_df, table_name, connection_string)

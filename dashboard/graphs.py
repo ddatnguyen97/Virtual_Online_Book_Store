@@ -1,10 +1,8 @@
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import folium
 from streamlit_folium import st_folium
-import streamlit as st
-from utils import format_revenue
+import pandas as pd
 
 def create_data_metric(label, current_value, previous_value):
     if previous_value == 0 or previous_value is None:
@@ -15,17 +13,25 @@ def create_data_metric(label, current_value, previous_value):
     indicator = go.Indicator(
         mode="number+delta",
         value=current_value,
-        delta={"reference": delta_reference,
+        delta={
+                "reference": delta_reference,
                 "relative": True,
                 "valueformat": ".2%",
                 "increasing": {"color": "green"},
-                "decreasing": {"color": "red"},},
-        number={"valueformat": ",.2s",
+                "decreasing": {"color": "red"},
+                "font": {"size": 35}
                 },
-        title={"text": label},
+        number={    
+                "valueformat": ",.2s",
+                "font": {"size": 45}
+                },
+        title={
+                "text": label,
+               'font': {'size': 25}
+               },
     )
     fig = go.Figure(indicator)
-    fig.update_layout(height=200, margin=dict(t=30, b=10, l=10, r=10))
+    fig.update_layout(height=180, margin=dict(t=30, b=10, l=10, r=10))
     return fig
 
 def create_line_chart(data, x, y, x_label=None, y_label=None, color=None, height=None, markers=None):
@@ -40,16 +46,13 @@ def create_line_chart(data, x, y, x_label=None, y_label=None, color=None, height
     chart.update_layout(
         xaxis_title=x_label,
         yaxis_title=y_label,
+        yaxis=dict(rangemode='tozero')
     )
     chart.update_xaxes(
         tickformat="%m-%d",
         type="category"
     ) 
     return chart
-
-import plotly.express as px
-
-import plotly.express as px
 
 def create_bar_chart(
     data,
@@ -61,13 +64,14 @@ def create_bar_chart(
     height=None,
     orientation=None,
     ):
+
     chart = px.bar(
         data,
         x=x,
         y=y,
         color=color,
         height=height,
-        orientation=orientation
+        orientation=orientation,
     )
 
     chart.update_layout(
@@ -94,7 +98,7 @@ def create_pie_chart(data, names, values, height=None, hole=None):
     legend=dict(
         orientation="h",
         x=0.5,
-        y=-0.1,  # moves legend below the chart
+        y=-0.1,
         xanchor="center",
         yanchor="top",
         )
@@ -118,7 +122,6 @@ def create_choropleth_map(data, locations, color, title, geojson, locationmode='
 
 def create_folium_map_object(data, geo_data, value_columns, key_on, legend_name):
     choropleth_map = folium.Map(location=[16,108], zoom_start=5, tiles="cartodbpositron")
-
     folium.Choropleth(
         geo_data=geo_data,
         data=data,
@@ -144,15 +147,5 @@ def render_folium_map(map_obj, geo_data, tooltip_fields):
 
     return st_folium(map_obj, height=400, width="100%")
 
-def create_combined_charts(chart_1, chart_2, height=None):
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-    for trace in chart_1.data:
-        fig.add_trace(trace, secondary_y=False)
-
-    for trace in chart_2.data:
-        fig.add_trace(trace, secondary_y=True)
-
-    fig.update_layout(height=height)
-    return st.plotly_chart(fig)
 
 

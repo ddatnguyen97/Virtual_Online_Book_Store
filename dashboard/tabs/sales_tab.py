@@ -19,22 +19,22 @@ def sales_tab(selected_date, connection_string  ):
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.header("Sales Overview")
+            with st.container(
+                horizontal_alignment="center",
+                vertical_alignment="center"
+            ):
+                st.header("Weekly Sales Overview")
         
         with col2:
-            with st.container():
-                col1, col2 = st.columns([0.2, 0.8])
-                with col1:
-                    st.markdown(f"**Start date:** ")
-                with col2:
-                    st.badge(str(curr_week_start_date), color='violet')
-
-            with st.container():
-                col1, col2 = st.columns([0.2, 0.8])
-                with col1:
-                    st.markdown(f"**End date:** ")
-                with col2:
-                    st.badge(str(curr_week_end_date), color='violet')
+            with st.container(
+                horizontal=True,
+                horizontal_alignment="center",
+                vertical_alignment="bottom"
+            ):
+                st.text("Week Range:")
+                st.badge(str(curr_week_start_date), color='yellow')
+                st.text("to")
+                st.badge(str(curr_week_end_date), color='yellow')
 
     curr_sales_df = get_sales_summary(curr_week_start_date, curr_week_end_date, connection_string)
     prev_sales_df = get_sales_summary(prev_week_start_date, prev_week_end_date, connection_string)
@@ -131,7 +131,7 @@ def sales_tab(selected_date, connection_string  ):
     with st.container():
         col1, col2 = st.columns([0.7, 0.3])
         with col1:
-            st.subheader("DoD Growth")
+            st.subheader("DoD Growth %")
             st.plotly_chart(dod_growth_chart)
 
         with col2:
