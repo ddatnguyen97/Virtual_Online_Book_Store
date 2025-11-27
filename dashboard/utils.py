@@ -5,7 +5,13 @@ import json
 import streamlit as st
 
 def safe_divide(a, b):
-    return a / b if b not in [0, None] else 0
+    if b is None:
+        return 0
+    try:
+        b = float(b)
+    except:
+        return 0
+    return a / b if b != 0 else 0
 
 def format_revenue(n):
     if n is None:
@@ -61,19 +67,8 @@ def clean_col_name(col):
     return col.title()
 
 def create_date_range(df, start_date, end_date):
-    # date_range = pd.date_range(start=start_date, end=end_date)
-    # df = df.set_index("date").reindex(date_range)
-    # df.index.name = "date"
-    # df = df.fillna(0)
-    # return df.reset_index()
-    if pd.isna(start_date) or pd.isna(end_date):
-        return pd.DataFrame(columns=df.columns)
-
     date_range = pd.date_range(start=start_date, end=end_date)
-
     df = df.set_index("date").reindex(date_range)
     df.index.name = "date"
-
     df = df.fillna(0)
-
     return df.reset_index()

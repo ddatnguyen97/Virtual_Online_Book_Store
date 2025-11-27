@@ -2,7 +2,6 @@ import streamlit as st
 
 from data import *
 from graphs import *
-from filters import *
 from utils import *
 
 from sidebar import *
@@ -39,5 +38,5 @@ with st.container():
     with tab1:
         sales_tab(selected_date, connection_string)
 
-    # with tab2:
-    #     customer_tab()
+    with tab2:
+        customer_tab(selected_date, connection_string)

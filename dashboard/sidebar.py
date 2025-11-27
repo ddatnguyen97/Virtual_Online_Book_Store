@@ -13,13 +13,17 @@ def display_date(connection_string):
     )
     return selected_date
 
-def build_filters(df, cols):
+def build_filters(df, cols, key_label):
     filters = {}
+
     for col in cols:
         unique_values = df[col].dropna().unique().tolist()
-        clean_column = clean_col_name(col)
-        filters[col] = st.multiselect(clean_column,
-                                       unique_values)
+        filters[col] = st.multiselect(
+            label=col.capitalize(),
+            options=unique_values,
+            key=f"filter_{key_label}_{col}"
+        )
+
     return filters
 
 def apply_filter(df, filters):

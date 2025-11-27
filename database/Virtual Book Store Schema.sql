@@ -23,7 +23,8 @@ CREATE TABLE "book_info" (
 CREATE TABLE "customer_info" (
   "dob" date,
   "customer_phone" varchar PRIMARY KEY,
-  "city_id" varchar
+  "city_id" varchar,
+  "age_group" varchar
 );
 
 CREATE TABLE "dim_city_province" (
