@@ -26,7 +26,7 @@ def create_data_metric(label, current_value, previous_value):
                 },
         title={
                 "text": label,
-               'font': {'size': 25}
+                "font": {"size": 25},
                },
     )
     fig = go.Figure(indicator)

@@ -32,11 +32,23 @@ st.title("Virtual Online Book Store Dashboard")
 with st.sidebar:
     selected_date = display_date(connection_string)
 
-with st.container():    
-    tab1, tab2, tab3 = st.tabs(["Sales", "Customers", "Products"])
+selected_tab = st.session_state.get("selected_tab", "Sales")
 
-    with tab1:
-        sales_tab(selected_date, connection_string)
+selected_tab = st.radio(
+                "Select Tabs:",
+                ["Sales", "Customers", "Products"],
+                horizontal=True,
+                index=["Sales", "Customers", "Products"].index(selected_tab),
+            )
 
-    with tab2:
-        customer_tab(selected_date, connection_string)
+st.session_state["selected_tab"] = selected_tab
+
+if selected_tab == "Sales":
+    sales_tab(selected_date, connection_string)
+
+elif selected_tab == "Customers":
+    customer_tab(selected_date, connection_string)
+
+elif selected_tab == "Products":
+    pass
+    # product_tab(selected_date, connection_string)

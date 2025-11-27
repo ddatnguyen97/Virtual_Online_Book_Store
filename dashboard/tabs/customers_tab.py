@@ -93,6 +93,7 @@ def customer_tab(selected_date, connection_string):
     customers_by_date = curr_customers_df.groupby("date").agg(
         total_customers=("customers", "nunique")
     ).reset_index()
+
     customers_by_date_chart = create_bar_chart(
         customers_by_date,
         "date",
@@ -104,3 +105,5 @@ def customer_tab(selected_date, connection_string):
     with st.container():
         st.subheader("Customers by Date")
         st.plotly_chart(customers_by_date_chart, key = "customers_count_by_date")
+
+    # orders_by_age_group = 
