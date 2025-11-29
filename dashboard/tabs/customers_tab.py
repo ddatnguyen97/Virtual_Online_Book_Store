@@ -53,19 +53,24 @@ def customer_tab(selected_date, connection_string):
     curr_filtered_df = apply_filter(curr_customers_df, filters)
     prev_filtered_df = apply_filter(prev_customers_df, filters)
 
-    curr_total_revenue = curr_filtered_df["total_revenue"].sum()
+    # curr_total_revenue = curr_filtered_df["total_revenue"].sum()
     curr_total_customers = curr_filtered_df["customers"].nunique()
-    curr_avg_sales_per_customer = safe_divide(curr_total_revenue, curr_total_customers)
+    # curr_avg_sales_per_customer = safe_divide(curr_total_revenue, curr_total_customers)
 
-    prev_total_revenue = prev_filtered_df["total_revenue"].sum()
+    # prev_total_revenue = prev_filtered_df["total_revenue"].sum()
     prev_total_customers = prev_filtered_df["customers"].nunique()
-    prev_avg_sales_per_customer = safe_divide(prev_total_revenue, prev_total_customers)
+    # prev_avg_sales_per_customer = safe_divide(prev_total_revenue, prev_total_customers)
 
-    total_revenue_metric = create_data_metric(
-                                    "Total Revenue",
-                                    curr_total_revenue,
-                                    prev_total_revenue
-                                )
+    rfm_base = curr_filtered_df.groupby("customers").agg(
+        last_order_date=("date", "max"),
+        frequency=("order_id", "nunique"),
+        monetary=("total_revenue", "sum")
+    ).reset_index()
+    rfm_base["last_order_date"] = pd.to_datetime(rfm_base["last_order_date"])
+    rfm_base['recency'] = (pd.Timestamp.today() - rfm_base['last_order_date']).dt.days
+    avg_recency = rfm_base['recency'].mean()
+    avg_frequency = rfm_base['frequency'].mean()
+    avg_monetary = rfm_base['monetary'].mean()
     
     total_customers_metric = create_data_metric(
                                     "Total Customers",
@@ -73,24 +78,37 @@ def customer_tab(selected_date, connection_string):
                                     prev_total_customers
                                 )
 
-    avg_sales_per_cust_metric = create_data_metric(
-                                    "Avg Sales per Customer",
-                                    curr_avg_sales_per_customer,
-                                    prev_avg_sales_per_customer
+    avg_recency_metric = create_data_metric(
+                                    "Avg Recency",
+                                    avg_recency
+                                )
+    
+    avg_frequency_metric = create_data_metric(
+                                    "Avg Frequency",
+                                    avg_frequency
+                                )
+    
+    avg_monetary_metric = create_data_metric(
+                                    "Avg Monetary",
+                                    avg_monetary
                                 )
     
     with st.container():
-        col1, col3, col5 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.plotly_chart(total_revenue_metric, key = "customers_revenue")
+            st.plotly_chart(total_customers_metric, key = "customers_total") 
+
+        with col2:
+            st.plotly_chart(avg_recency_metric, key = "avg_recency") 
 
         with col3:
-            st.plotly_chart(total_customers_metric, key = "customers_total")
+            st.plotly_chart(avg_frequency_metric, key = "avg_frequency")
+        
+        with col4:
+            st.plotly_chart(avg_monetary_metric, key = "avg_monetary")
+        
 
-        with col5:
-            st.plotly_chart(avg_sales_per_cust_metric, key = "customers_avg_value")
-
-    customers_by_date = curr_customers_df.groupby("date").agg(
+    customers_by_date = curr_filtered_df.groupby("date").agg(
         total_customers=("customers", "nunique")
     ).reset_index()
 
@@ -108,7 +126,7 @@ def customer_tab(selected_date, connection_string):
         "23 - 30",
         "Over 30"
     ]
-    revenue_by_age_group = curr_customers_df.groupby("age_group").agg(
+    revenue_by_age_group = curr_filtered_df.groupby("age_group").agg(
         total_revenue=("total_revenue", "sum"),
     ).reset_index()
     revenue_by_age_group = revenue_by_age_group.sort_values(
@@ -125,7 +143,7 @@ def customer_tab(selected_date, connection_string):
         orientation="h"
     )
 
-    customers_by_city = curr_customers_df.groupby("city_province")["customers"].nunique().reset_index()
+    customers_by_city = curr_filtered_df.groupby("city_province")["customers"].nunique().reset_index()
     value_columns=["city_province", "customers"]
     tooltip_fields=["ten_tinh"]  
     key_on="feature.properties.ten_tinh"
@@ -154,12 +172,3 @@ def customer_tab(selected_date, connection_string):
                 legend_name
             )
             render_folium_map(map_obj, provinces_json, tooltip_fields)
-
-    rfm_base = curr_customers_df.groupby("customers").agg(
-        last_order_date=("date", "max"),
-        frequency=("order_id", "nunique"),
-        monetary=("total_revenue", "sum")
-    ).reset_index()
-    rfm_base["last_order_date"] = pd.to_datetime(rfm_base["last_order_date"])
-    rfm_base['recency'] = (pd.Timestamp.today() - rfm_base['last_order_date']).dt.days
-

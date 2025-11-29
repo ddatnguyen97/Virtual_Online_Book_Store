@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import folium
 from streamlit_folium import st_folium
 
-def create_data_metric(label, current_value, previous_value):
+def create_data_metric(label, current_value=None, previous_value=None):
     if previous_value == 0 or previous_value is None:
         delta_reference = None
     else:
