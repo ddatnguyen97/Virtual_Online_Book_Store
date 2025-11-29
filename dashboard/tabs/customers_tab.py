@@ -102,8 +102,64 @@ def customer_tab(selected_date, connection_string):
         orientation="v"
     )
 
-    with st.container():
-        st.subheader("Customers by Date")
-        st.plotly_chart(customers_by_date_chart, key = "customers_count_by_date")
+    age_group_category_order = [
+        "Under 18",
+        "18 - 22",
+        "23 - 30",
+        "Over 30"
+    ]
+    revenue_by_age_group = curr_customers_df.groupby("age_group").agg(
+        total_revenue=("total_revenue", "sum"),
+    ).reset_index()
+    revenue_by_age_group = revenue_by_age_group.sort_values(
+        by="age_group",
+        key=lambda x: x.map({group: i for i, group in enumerate(age_group_category_order)}),
+        ascending=False
+    )
 
-    # orders_by_age_group = 
+    revenue_by_age_group_chart = create_bar_chart(
+        revenue_by_age_group,
+        y="age_group",
+        x="total_revenue",
+        height=400,
+        orientation="h"
+    )
+
+    customers_by_city = curr_customers_df.groupby("city_province")["customers"].nunique().reset_index()
+    value_columns=["city_province", "customers"]
+    tooltip_fields=["ten_tinh"]  
+    key_on="feature.properties.ten_tinh"
+    legend_name="Customers by Province"
+    provinces_json_path = os.getenv("GEO_JSON_PATH")
+    provinces_json = load_json_file(provinces_json_path)
+
+    with st.container():
+        st.header("Customer Demographics")
+        col1, col2, col3 = st.columns([0.4, 0.3, 0.3])
+        with col1:
+            st.subheader("Customers by Date")
+            st.plotly_chart(customers_by_date_chart, key = "customers_count_by_date")
+        
+        with col2:
+            st.subheader("Age Group")
+            st.plotly_chart(revenue_by_age_group_chart, key = "revnue_by_age_group")
+        
+        with col3:
+            st.subheader("City/Province")
+            map_obj = create_folium_map_object(
+                customers_by_city,
+                provinces_json,
+                value_columns,
+                key_on,
+                legend_name
+            )
+            render_folium_map(map_obj, provinces_json, tooltip_fields)
+
+    rfm_base = curr_customers_df.groupby("customers").agg(
+        last_order_date=("date", "max"),
+        frequency=("order_id", "nunique"),
+        monetary=("total_revenue", "sum")
+    ).reset_index()
+    rfm_base["last_order_date"] = pd.to_datetime(rfm_base["last_order_date"])
+    rfm_base['recency'] = (pd.Timestamp.today() - rfm_base['last_order_date']).dt.days
+

@@ -35,7 +35,7 @@ with st.sidebar:
 selected_tab = st.session_state.get("selected_tab", "Sales")
 
 selected_tab = st.radio(
-                "Select Tabs:",
+                "Tabs:",
                 ["Sales", "Customers", "Products"],
                 horizontal=True,
                 index=["Sales", "Customers", "Products"].index(selected_tab),

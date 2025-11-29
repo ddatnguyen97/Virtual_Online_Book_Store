@@ -114,7 +114,7 @@ def sales_tab(selected_date, connection_string):
                 "date",
                 "dod_growth",
                 height=400,
-                orientation='v'
+                orientation="v"
             )
 
     payment_df = curr_filtered_df.copy()
@@ -145,7 +145,6 @@ def sales_tab(selected_date, connection_string):
             st.subheader("Payment Type")
             st.plotly_chart(payment_type_chart, key = "sales_payment")
         
-    # revenue_by_city_df = curr_filtered_df.copy()
     revenue_by_city = curr_filtered_df.groupby("city_province")["total_revenue"].sum().reset_index()
     value_columns=["city_province", "total_revenue"]
     tooltip_fields=["ten_tinh"]  
@@ -154,8 +153,21 @@ def sales_tab(selected_date, connection_string):
     provinces_json_path = os.getenv("GEO_JSON_PATH")
     provinces_json = load_json_file(provinces_json_path)
     
-    # revenue_by_region_df = curr_filtered_df.copy()
+    region_order = [
+        "Northeast",
+        "Northwest",
+        "Red River Delta",
+        "North Central Coast",
+        "South Central Coast",
+        "Southeast",
+        "Mekong Delta"
+    ]
     revenue_by_region = curr_filtered_df.groupby("region")["total_revenue"].sum().reset_index()
+    revenue_by_region = revenue_by_region.sort_values(
+        by="region",
+        key=lambda x: x.map({region: i for i, region in enumerate(region_order)}),
+        ascending=False
+    )
 
     revenue_by_region_chart = create_bar_chart(
                 revenue_by_region,
