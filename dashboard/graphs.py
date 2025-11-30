@@ -146,5 +146,15 @@ def render_folium_map(map_obj, geo_data, tooltip_fields):
 
     return st_folium(map_obj, height=400, width="100%")
 
-
+def create_histogram_chart(data, x, y, x_label=None, y_label=None):
+    chart = px.histogram(
+        data,
+        x=x,
+        y=y,
+    )
+    chart.update_layout(
+        xaxis_title=x_label,
+        yaxis_title=y_label,
+    )
+    return chart
 

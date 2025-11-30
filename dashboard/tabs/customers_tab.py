@@ -31,9 +31,9 @@ def customer_tab(selected_date, connection_string):
                 vertical_alignment="bottom"
             ):
                 st.text("Week Range:")
-                st.badge(str(curr_week_start_date), color='yellow')
+                st.badge(str(curr_week_start_date), color="yellow")
                 st.text("to")
-                st.badge(str(curr_week_end_date), color='yellow')
+                st.badge(str(curr_week_end_date), color="yellow")
 
     curr_customers_df = get_customers_summary(curr_week_start_date, curr_week_end_date, connection_string)
     prev_customers_df = get_customers_summary(prev_week_start_date, prev_week_end_date, connection_string)
@@ -61,16 +61,16 @@ def customer_tab(selected_date, connection_string):
     prev_total_customers = prev_filtered_df["customers"].nunique()
     # prev_avg_sales_per_customer = safe_divide(prev_total_revenue, prev_total_customers)
 
-    rfm_base = curr_filtered_df.groupby("customers").agg(
-        last_order_date=("date", "max"),
-        frequency=("order_id", "nunique"),
-        monetary=("total_revenue", "sum")
-    ).reset_index()
-    rfm_base["last_order_date"] = pd.to_datetime(rfm_base["last_order_date"])
-    rfm_base['recency'] = (pd.Timestamp.today() - rfm_base['last_order_date']).dt.days
-    avg_recency = rfm_base['recency'].mean()
-    avg_frequency = rfm_base['frequency'].mean()
-    avg_monetary = rfm_base['monetary'].mean()
+    rfm_base = calculate_rfm(curr_filtered_df,
+                            "date",
+                            "customers",
+                            "order_id",
+                            "total_revenue")
+    # rfm_base["last_order_date"] = pd.to_datetime(rfm_base["last_order_date"])
+    # rfm_base["recency"] = (pd.Timestamp.today() - rfm_base["last_order_date"]).dt.days
+    avg_recency = rfm_base["recency"].mean()
+    avg_frequency = rfm_base["frequency"].mean()
+    avg_monetary = rfm_base["monetary"].mean()
     
     total_customers_metric = create_data_metric(
                                     "Total Customers",

@@ -69,3 +69,24 @@ def get_customers_summary(start_date, end_date, connection_string):
     result = extract_data(query, connection_string)
     return result
 
+def calculate_rfm(df, date_col, customer_col, order_col, revenue_col):
+    df[date_col] = pd.to_datetime(df[date_col])
+
+    rfm = df.groupby(customer_col).agg(
+        last_order_date=(date_col, "max"),
+        frequency=(order_col, "nunique"),
+        monetary=(revenue_col, "sum")
+    ).reset_index()
+
+    rfm["recency"] = (pd.Timestamp.today() - rfm["last_order_date"]).dt.days
+    rfm["r_score"] = pd.qcut(rfm["recency"], 5, labels=[5,4,3,2,1]).astype(int)
+    rfm["f_score"] = pd.qcut(rfm["frequency"].rank(method="first"), 
+                             5, labels=[1,2,3,4,5]).astype(int)
+    rfm["m_score"] = pd.qcut(rfm["monetary"].rank(method="first"),
+                             5, labels=[1,2,3,4,5]).astype(int)
+    
+    rfm["rfm_score"] = rfm["r_score"].astype(str) + \
+                       rfm["f_score"].astype(str) + \
+                       rfm["m_score"].astype(str)
+
+    return rfm
