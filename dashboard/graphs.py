@@ -146,11 +146,13 @@ def render_folium_map(map_obj, geo_data, tooltip_fields):
 
     return st_folium(map_obj, height=400, width="100%")
 
-def create_histogram_chart(data, x, y, x_label=None, y_label=None):
+def create_histogram_chart(data, x=None, y=None, x_label=None, y_label=None, nbins=None, height=None):
     chart = px.histogram(
         data,
         x=x,
         y=y,
+        nbins=nbins,
+        height=height
     )
     chart.update_layout(
         xaxis_title=x_label,
@@ -158,3 +160,40 @@ def create_histogram_chart(data, x, y, x_label=None, y_label=None):
     )
     return chart
 
+def create_treemap_chart(data, path, values, height=None):
+    if isinstance(path, str):
+        path = [path]
+    chart = px.treemap(
+        data,
+        path=path,
+        values=values,
+        height=height
+    )
+    chart.update_traces(
+        marker=dict(cornerradius=5)
+    )
+
+    return chart 
+
+def create_data_table(df, height=None, column_width=None):
+    table = go.Figure(
+        data=[
+            go.Table(
+                columnwidth=column_width,
+                header=dict(
+                    values=list(df.columns),
+                    fill_color="lightgrey",
+                    align="left",
+                    font=dict(size=12, color="black"),
+                ),
+                cells=dict(
+                    values=[df[col] for col in df.columns],
+                    align="left",
+                    font=dict(size=12),
+                    height=30,
+                )
+            )
+        ]
+    )
+    table.update_layout(height=height)
+    return table

@@ -7,7 +7,7 @@ connection_string = get_connection_string()
 def display_date(connection_string):
     max_date = get_max_date(connection_string)
     selected_date = st.date_input(
-        "Select date",
+        "Pick a date",
         value=max_date,          
         max_value=max_date       
     )

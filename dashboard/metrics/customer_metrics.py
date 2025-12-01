@@ -70,6 +70,7 @@ def get_customers_summary(start_date, end_date, connection_string):
     return result
 
 def calculate_rfm(df, date_col, customer_col, order_col, revenue_col):
+    df = df.copy()
     df[date_col] = pd.to_datetime(df[date_col])
 
     rfm = df.groupby(customer_col).agg(
@@ -85,8 +86,8 @@ def calculate_rfm(df, date_col, customer_col, order_col, revenue_col):
     rfm["m_score"] = pd.qcut(rfm["monetary"].rank(method="first"),
                              5, labels=[1,2,3,4,5]).astype(int)
     
-    rfm["rfm_score"] = rfm["r_score"].astype(str) + \
-                       rfm["f_score"].astype(str) + \
-                       rfm["m_score"].astype(str)
+    rfm["rfm_score"] = rfm["r_score"].astype(int) + \
+                       rfm["f_score"].astype(int) + \
+                       rfm["m_score"].astype(int)
 
     return rfm

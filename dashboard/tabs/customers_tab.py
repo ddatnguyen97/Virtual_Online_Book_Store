@@ -53,21 +53,16 @@ def customer_tab(selected_date, connection_string):
     curr_filtered_df = apply_filter(curr_customers_df, filters)
     prev_filtered_df = apply_filter(prev_customers_df, filters)
 
-    # curr_total_revenue = curr_filtered_df["total_revenue"].sum()
     curr_total_customers = curr_filtered_df["customers"].nunique()
-    # curr_avg_sales_per_customer = safe_divide(curr_total_revenue, curr_total_customers)
 
-    # prev_total_revenue = prev_filtered_df["total_revenue"].sum()
     prev_total_customers = prev_filtered_df["customers"].nunique()
-    # prev_avg_sales_per_customer = safe_divide(prev_total_revenue, prev_total_customers)
 
     rfm_base = calculate_rfm(curr_filtered_df,
                             "date",
                             "customers",
                             "order_id",
                             "total_revenue")
-    # rfm_base["last_order_date"] = pd.to_datetime(rfm_base["last_order_date"])
-    # rfm_base["recency"] = (pd.Timestamp.today() - rfm_base["last_order_date"]).dt.days
+    rfm_base["customer_segment"] = rfm_base["rfm_score"].apply(customer_segmentation)
     avg_recency = rfm_base["recency"].mean()
     avg_frequency = rfm_base["frequency"].mean()
     avg_monetary = rfm_base["monetary"].mean()
@@ -172,3 +167,56 @@ def customer_tab(selected_date, connection_string):
                 legend_name
             )
             render_folium_map(map_obj, provinces_json, tooltip_fields)
+
+    st.divider()
+    st.header("RFM Analysis")
+
+    rfm_score_histogram_chart = create_histogram_chart(
+                                    rfm_base,
+                                    "rfm_score",
+                                    nbins=20,
+                                    height=250
+                                )
+    with st.container():
+        st.subheader("RFM Score Distribution")
+        st.plotly_chart(rfm_score_histogram_chart, key="rfm_score_histogram")
+
+    segment_order = [
+        "Champions",
+        "Potential loyalists",
+        "At risk",
+        "Can't lose",
+        "Lost"
+    ]
+
+    customers_grouped_by_segment = rfm_base.groupby("customer_segment").agg(
+        customer_count=("customers", "nunique")
+    ).reset_index()
+    customers_grouped_by_segment = customers_grouped_by_segment.sort_values(
+        by="customer_segment",
+        key=lambda x: x.map({segment: i for i, segment in enumerate(segment_order)}),
+        ascending=False
+    )
+
+    customers_segment_chart = create_treemap_chart(
+        customers_grouped_by_segment,
+        ["customer_segment"],
+        "customer_count",
+        height=400,
+    )
+    column_width = [80, 120, 60, 100, 60, 60, 60, 60, 140]
+    rfm_detail_table = create_data_table(
+        rfm_base,
+        height=400,
+        column_width=column_width
+    )
+    
+    with st.container():
+        col1, col2 = st.columns([0.35, 0.65])
+        with col1:
+            st.subheader("Customer Segmentation")
+            st.plotly_chart(customers_segment_chart, key="customers_segment_bar_chart")
+
+        with col2:
+            st.subheader("Details")
+            st.plotly_chart(rfm_detail_table, key="rfm_detail_table")

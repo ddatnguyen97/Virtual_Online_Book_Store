@@ -72,3 +72,17 @@ def create_date_range(df, start_date, end_date):
     df.index.name = "date"
     df = df.fillna(0)
     return df.reset_index()
+
+def customer_segmentation(rfm_score):
+    if rfm_score >= 9:
+        return "Champions"
+    elif rfm_score >= 7:
+        return "Potential loyalists"
+    elif rfm_score >= 5:
+        return "At risk"
+    elif rfm_score >= 3:
+        return "Can't lose"
+    else:
+        return "Lost"
+
+    
