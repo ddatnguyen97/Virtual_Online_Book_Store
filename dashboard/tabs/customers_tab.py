@@ -54,8 +54,10 @@ def customer_tab(selected_date, connection_string):
     prev_filtered_df = apply_filter(prev_customers_df, filters)
 
     curr_total_customers = curr_filtered_df["customers"].nunique()
-
     prev_total_customers = prev_filtered_df["customers"].nunique()
+
+    curr_returned_customers = curr_filtered_df[curr_filtered_df["return_customers"] == 1]["customers"].nunique()
+    prev_returned_customers = prev_filtered_df[prev_filtered_df["return_customers"] == 1]["customers"].nunique()
 
     rfm_base = calculate_rfm(curr_filtered_df,
                             "date",
@@ -71,6 +73,12 @@ def customer_tab(selected_date, connection_string):
                                     "Total Customers",
                                     curr_total_customers,
                                     prev_total_customers
+                                )
+    
+    returned_customers_metric = create_data_metric(
+                                    "Returned Customers",
+                                    curr_returned_customers,
+                                    prev_returned_customers
                                 )
 
     avg_recency_metric = create_data_metric(
@@ -89,17 +97,20 @@ def customer_tab(selected_date, connection_string):
                                 )
     
     with st.container():
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
-            st.plotly_chart(total_customers_metric, key = "customers_total") 
-
+            st.plotly_chart(total_customers_metric, key = "customers_total")
+        
         with col2:
-            st.plotly_chart(avg_recency_metric, key = "avg_recency") 
+            st.plotly_chart(returned_customers_metric, key = "customers_returned")
 
         with col3:
+            st.plotly_chart(avg_recency_metric, key = "avg_recency") 
+
+        with col4:
             st.plotly_chart(avg_frequency_metric, key = "avg_frequency")
         
-        with col4:
+        with col5:
             st.plotly_chart(avg_monetary_metric, key = "avg_monetary")
         
 

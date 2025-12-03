@@ -25,12 +25,6 @@ def extract_book_identifiers(identifiers):
             isbn_13 = identifier.get('identifier')
     return isbn_10, isbn_13
 
-# def extract_book_dimensions(dimensions):
-#     height = dimensions.get('height', 'N/A')
-#     width = dimensions.get('width', 'N/A')
-#     thickness = dimensions.get('thickness', 'N/A')
-#     return height, width, thickness
-
 def extract_list_price(list_price):
     amount = list_price.get('amount', 'N/A')
     currency_code = list_price.get('currencyCode', 'N/A')
@@ -67,13 +61,8 @@ def fetch_book_data(response):
             isbn_10, isbn_13 = extract_book_identifiers(identifiers)
 
             page_count = volume_info.get('pageCount', 'N/A')
-
-            # dimensions = volume_info.get('dimensions', {})
-            # height, width, thickness = extract_book_dimensions(dimensions)  
-
             print_type = volume_info.get('printType', 'N/A')
-            # main_category = volume_info.get('mainCategory', 'N/A')
-            categories = volume_info.get('categories', [])
+            # categories = volume_info.get('categories', [])
 
             language = volume_info.get('language', 'N/A')
 
@@ -97,12 +86,8 @@ def fetch_book_data(response):
                 "isbn_10": isbn_10,
                 "isbn_13": isbn_13,
                 "page_count": page_count,
-                # "height": height,
-                # "width": width,
-                # "thickness": thickness,
                 "print_type": print_type,
-                # "main_category": main_category,
-                "categories": ', '.join(categories) if categories else 'N/A',
+                # "categories": ', '.join(categories) if categories else 'N/A',
                 "language": language,
                 "list_price_amount": list_price_amount,
                 "retail_price_amount": retail_price_amount,
@@ -113,24 +98,38 @@ def fetch_book_data(response):
             })
 
         volume_df = pd.DataFrame(books, index=None)
-        # logging.info("Volume data fetched successfully.")
         return volume_df
     
     except Exception as e:
         logging.error(f"Error fetching volume data: {e}")
         return pd.DataFrame()
-    
+
+def create_thickness_id(page_count):
+    try:
+        if page_count <= 150:
+            return "1"
+        elif page_count <= 300:
+            return "2"
+        elif page_count <= 450:
+            return "3"
+        else:
+            return "na4"
+    except Exception as e:
+        logging.error(f"Error creating thickness_id: {e}")
+        raise
+
 def transform_data(df):
     try:
         df['published_date'] = pd.to_datetime(df['published_date'], errors='coerce')
         numeric_cols = [
             'page_count',
-            # 'height', 'width', 'thickness',
             'list_price_amount', 'retail_price_amount'
         ]
 
         for col in numeric_cols:
             df[col] = pd.to_numeric(df[col], errors='coerce')
+
+        df['thickness_id'] = df['page_count'].apply(create_thickness_id)
 
         logging.info("Transformed book data successfully.")
         return df

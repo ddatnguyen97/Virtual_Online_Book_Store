@@ -23,14 +23,16 @@ CREATE TABLE "book_info" (
 CREATE TABLE "dim_category" (
   "category_id" varchar PRIMARY KEY,
   "main_category" varchar,
-  "l1_category" varchar,
-  "l2_category" varchar
+  "level_1" varchar,
+  "level_2" varchar,
+  "level_3" varchar
 );
 
 CREATE TABLE "customer_info" (
   "dob" date,
   "customer_phone" varchar PRIMARY KEY,
   "city_id" varchar,
+  "age" int,
   "age_group" varchar
 );
 
@@ -57,7 +59,8 @@ CREATE TABLE "orders_info" (
   "book_id" varchar,
   "date_id" varchar,
   "order_quantity" int,
-  "payment_type_id" varchar
+  "payment_type_id" varchar,
+  "rating" float
 );
 
 CREATE TABLE "dim_payment_type" (
@@ -74,14 +77,7 @@ CREATE TABLE "dim_date" (
   "day" int
 );
 
-CREATE TABLE "order_rating" (
-  "order_id" varchar PRIMARY KEY,
-  "customer_phone" varchar,
-  "book_id" varchar,
-  "rating_value" float,
-  "review_text" text,
-  "rating_date_id" varchar
-);
+ALTER TABLE "book_info" ADD FOREIGN KEY ("category_id") REFERENCES "dim_category" ("category_id");
 
 ALTER TABLE "customer_info" ADD FOREIGN KEY ("city_id") REFERENCES "dim_city_province" ("city_id");
 
@@ -96,13 +92,3 @@ ALTER TABLE "orders_info" ADD FOREIGN KEY ("book_id") REFERENCES "book_info" ("b
 ALTER TABLE "orders_info" ADD FOREIGN KEY ("date_id") REFERENCES "dim_date" ("date_id");
 
 ALTER TABLE "orders_info" ADD FOREIGN KEY ("payment_type_id") REFERENCES "dim_payment_type" ("payment_id");
-
-ALTER TABLE "order_rating" ADD FOREIGN KEY ("order_id") REFERENCES "orders_info" ("order_id");
-
-ALTER TABLE "order_rating" ADD FOREIGN KEY ("customer_phone") REFERENCES "customer_info" ("customer_phone");
-
-ALTER TABLE "order_rating" ADD FOREIGN KEY ("book_id") REFERENCES "book_info" ("book_id");
-
-ALTER TABLE "order_rating" ADD FOREIGN KEY ("rating_date_id") REFERENCES "dim_date" ("date_id");
-
-ALTER TABLE "book_info" ADD FOREIGN KEY ("category_id") REFERENCES "dim_category" ("category_id");
