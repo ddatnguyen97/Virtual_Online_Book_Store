@@ -90,7 +90,6 @@ def sales_tab(selected_date, connection_string):
         with col5:
             st.plotly_chart(avg_order_metric, key="sales_avg_orders")
 
-    # sales_by_date_df = curr_filtered_df.copy()
     sales_by_date = curr_filtered_df.groupby("date")["total_revenue"].sum().reset_index()
     sales_by_date = create_date_range(
         sales_by_date,
@@ -117,18 +116,25 @@ def sales_tab(selected_date, connection_string):
                 orientation="v"
             )
 
-    payment_df = curr_filtered_df.copy()
-    payment_df = (payment_df.groupby("payment_type")["total_revenue"]
+    payment_types_order = [
+        "Bank transfer",
+        "Cash",
+        "Credit card",
+        "E-wallet"
+    ]
+
+    payment_df = (curr_filtered_df.groupby("payment_type")["total_revenue"]
                   .sum()
                   .reset_index()
-                  .sort_values("payment_type", ascending=True)
             )
+    
     payment_type_chart = create_pie_chart(
                 payment_df,
                 names="payment_type",
                 values="total_revenue",
                 height=400,
-                hole=0.4
+                hole=0.4, 
+                category_orders={"payment_type": payment_types_order}
             )
 
     with st.container():
@@ -144,15 +150,40 @@ def sales_tab(selected_date, connection_string):
         with col2:
             st.subheader("Payment Type")
             st.plotly_chart(payment_type_chart, key = "sales_payment")
-        
-    revenue_by_city = curr_filtered_df.groupby("city_province")["total_revenue"].sum().reset_index()
-    value_columns=["city_province", "total_revenue"]
-    tooltip_fields=["ten_tinh"]  
-    key_on="feature.properties.ten_tinh"
-    legend_name="Revenue by Province"
-    provinces_json_path = os.getenv("GEO_JSON_PATH")
-    provinces_json = load_json_file(provinces_json_path)
+
+    city_province_df = pd.read_csv(
+        os.getenv("CITY_PROVINCE_PATH"),
+        encoding="utf-8-sig"
+    )
+
+    with open(os.getenv("GEO_JSON_PATH"), "r", encoding="utf-8") as f:
+        provinces_json = json.load(f)
     
+    revenue_by_city = curr_filtered_df.groupby("city_province")["total_revenue"].sum().reset_index()
+    merged_provinces_df = pd.merge(city_province_df, revenue_by_city, left_on="name", right_on="city_province", how="left").reset_index(drop=True)
+    merged_provinces_df.drop(columns=['city_province'], inplace=True)
+    merged_provinces_df["total_revenue"] = merged_provinces_df["total_revenue"].fillna(0)
+
+    custom_colorscale = [
+        [0.0, "grey"], 
+        [0.00001, "rgb(255,255,217)"],  
+        [0.5,    "rgb(65,182,196)"],
+        [1.0,    "rgb(8,48,107)"],     
+    ]
+
+    locations = "name"
+    featureidkey="properties.ten_tinh"
+    color="total_revenue"
+    plotly_map_chart = create_choropleth_map(
+        merged_provinces_df,
+        locations,
+        color,
+        custom_colorscale,
+        provinces_json,
+        featureidkey,
+        height=400
+    )
+
     region_order = [
         "Northeast",
         "Northwest",
@@ -183,14 +214,7 @@ def sales_tab(selected_date, connection_string):
         col1, col2 = st.columns(2)
         with col1:
             st.subheader("Sales by City/Province")
-            map_obj = create_folium_map_object(
-                revenue_by_city,
-                provinces_json,
-                value_columns,
-                key_on,
-                legend_name
-            )
-            render_folium_map(map_obj, provinces_json, tooltip_fields)
+            st.plotly_chart(plotly_map_chart, key="sales_by_city_map")
 
         with col2:
             st.subheader("Sales by Region")

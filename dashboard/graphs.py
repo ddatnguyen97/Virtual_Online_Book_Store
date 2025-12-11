@@ -85,7 +85,7 @@ def create_bar_chart(
         )
     return chart
 
-def create_pie_chart(data, names, values, height=None, hole=None):
+def create_pie_chart(data, names, values, height=None, hole=None, category_orders=None):
     chart = px.pie(
         data,
         names,
@@ -94,28 +94,39 @@ def create_pie_chart(data, names, values, height=None, hole=None):
         hole=hole
     )
     chart.update_layout(
-    legend=dict(
-        orientation="h",
-        x=0.5,
-        y=-0.1,
-        xanchor="center",
-        yanchor="top",
+        legend=dict(
+            orientation="h",
+            x=0.5,
+            y=-0.1,
+            xanchor="center",
+            yanchor="top",
         )
+    )
+    chart.update_traces(
+        sort=False,
     )
     return chart
 
-def create_choropleth_map(data, locations, color, title, geojson, locationmode='ISO-3'):
+def create_choropleth_map(data, locations, color, color_scale, geojson, featureidkey, height=None):
     chart = px.choropleth(
         data,
         locations=locations,
         color=color,
         geojson=geojson,
-        locationmode=locationmode,
-        color_continuous_scale="Viridis",
-        title=title
+        featureidkey=featureidkey,
+        color_continuous_scale=color_scale,
     )
-    chart.update_geos(fitbounds="locations", visible=False)
-    chart.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
+    chart.update_geos(
+        fitbounds="locations", 
+        visible=False,
+        projection_scale=5
+    )
+    
+    chart.update_layout(
+        template="plotly_dark",
+        height=height,
+        margin=dict(l=0, r=0, t=50, b=0)
+    )
 
     return chart
 

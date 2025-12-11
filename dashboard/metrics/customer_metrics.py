@@ -80,14 +80,11 @@ def calculate_rfm(df, date_col, customer_col, order_col, revenue_col):
     ).reset_index()
 
     rfm["recency"] = (pd.Timestamp.today() - rfm["last_order_date"]).dt.days
-    rfm["r_score"] = pd.qcut(rfm["recency"], 5, labels=[5,4,3,2,1]).astype(int)
-    rfm["f_score"] = pd.qcut(rfm["frequency"].rank(method="first"), 
-                             5, labels=[1,2,3,4,5]).astype(int)
-    rfm["m_score"] = pd.qcut(rfm["monetary"].rank(method="first"),
-                             5, labels=[1,2,3,4,5]).astype(int)
     
-    rfm["rfm_score"] = rfm["r_score"].astype(int) + \
-                       rfm["f_score"].astype(int) + \
-                       rfm["m_score"].astype(int)
+    rfm["r_score"] = safe_qcut(rfm["recency"], 5, labels=[5,4,3,2,1]).astype(int)
+    rfm["f_score"] = safe_qcut(rfm["frequency"].rank(method="first"), 5, labels=[1,2,3,4,5]).astype(int)
+    rfm["m_score"] = safe_qcut(rfm["monetary"].rank(method="first"), 5, labels=[1,2,3,4,5]).astype(int)
+
+    rfm["rfm_score"] = rfm["r_score"] + rfm["f_score"] + rfm["m_score"]
 
     return rfm

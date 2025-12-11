@@ -132,30 +132,67 @@ def customer_tab(selected_date, connection_string):
         "23 - 30",
         "Over 30"
     ]
+
     revenue_by_age_group = curr_filtered_df.groupby("age_group").agg(
         total_revenue=("total_revenue", "sum"),
+        count_by_age_group=("customers", "nunique")
     ).reset_index()
-    revenue_by_age_group = revenue_by_age_group.sort_values(
-        by="age_group",
-        key=lambda x: x.map({group: i for i, group in enumerate(age_group_category_order)}),
-        ascending=False
-    )
 
-    revenue_by_age_group_chart = create_bar_chart(
+    revenue_by_age_group = (revenue_by_age_group
+                            .sort_values(
+                                "age_group",
+                                key=lambda x: x.map({age_group: i for i, age_group in enumerate(age_group_category_order)}),
+                                ascending=False)
+                            ).reset_index(drop=True)
+
+    customers_by_age_group = create_bar_chart(
         revenue_by_age_group,
         y="age_group",
-        x="total_revenue",
+        x="count_by_age_group",
         height=400,
         orientation="h"
     )
 
+    revenue_by_age_group_chart = create_pie_chart(
+        revenue_by_age_group,
+        names="age_group",
+        values="total_revenue",
+        height=400,
+        category_orders={"age_group": age_group_category_order},
+        hole=0.4
+    )
+
+    city_province_df = pd.read_csv(
+        os.getenv("CITY_PROVINCE_PATH")
+    )
+
     customers_by_city = curr_filtered_df.groupby("city_province")["customers"].nunique().reset_index()
-    value_columns=["city_province", "customers"]
-    tooltip_fields=["ten_tinh"]  
-    key_on="feature.properties.ten_tinh"
-    legend_name="Customers by Province"
-    provinces_json_path = os.getenv("GEO_JSON_PATH")
-    provinces_json = load_json_file(provinces_json_path)
+    merged_provinces_df = pd.merge(city_province_df, customers_by_city, left_on="name", right_on="city_province", how="left").reset_index(drop=True)
+    merged_provinces_df.drop(columns=['city_province'], inplace=True)
+    merged_provinces_df["customers"] = merged_provinces_df["customers"].fillna(0)
+ 
+    with open(os.getenv("GEO_JSON_PATH"), "r", encoding="utf-8") as f:
+        provinces_json = json.load(f)
+
+    custom_colorscale = [
+        [0.0, "grey"], 
+        [0.00001, "rgb(255,255,217)"],  
+        [0.5,    "rgb(65,182,196)"],
+        [1.0,    "rgb(8,48,107)"],     
+    ]
+
+    locations = "name"
+    featureidkey="properties.ten_tinh"
+    color="customers"
+    plotly_map_chart = create_choropleth_map(
+        merged_provinces_df,
+        locations,
+        color,
+        custom_colorscale,
+        provinces_json,
+        featureidkey,
+        height=400
+    )
 
     with st.container():
         st.header("Customer Demographics")
@@ -166,18 +203,15 @@ def customer_tab(selected_date, connection_string):
         
         with col2:
             st.subheader("Age Group")
-            st.plotly_chart(revenue_by_age_group_chart, key = "revnue_by_age_group")
+            st.plotly_chart(customers_by_age_group, key = "customers_by_age_group")
         
         with col3:
-            st.subheader("City/Province")
-            map_obj = create_folium_map_object(
-                customers_by_city,
-                provinces_json,
-                value_columns,
-                key_on,
-                legend_name
-            )
-            render_folium_map(map_obj, provinces_json, tooltip_fields)
+            st.subheader("Age Group Contribution")
+            st.plotly_chart(revenue_by_age_group_chart, key="revenue_by_age_group")
+
+    with st.container():
+        st.header("Customers Geographic Distribution")
+        st.plotly_chart(plotly_map_chart, key="customers_by_city_province")
 
     st.divider()
     st.header("RFM Analysis")
