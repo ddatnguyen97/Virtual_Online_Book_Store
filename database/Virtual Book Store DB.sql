@@ -7,8 +7,8 @@ CREATE TABLE "book_info" (
   "published_date" date,
   "print_type" varchar,
   "page_count" int,
+  "thickness_id" varchar,
   "language" varchar,
-  "category_id" varchar,
   "isbn_10" varchar,
   "isbn_13" varchar,
   "is_ebook" bool,
@@ -22,10 +22,20 @@ CREATE TABLE "book_info" (
 
 CREATE TABLE "dim_category" (
   "category_id" varchar PRIMARY KEY,
-  "main_category" varchar,
-  "level_1" varchar,
-  "level_2" varchar,
-  "level_3" varchar
+  "category" varchar,
+  "category_lv1" varchar,
+  "category_lv2" varchar,
+  "category_lv3" varchar
+);
+
+CREATE TABLE "bridge_book_category" (
+  "book_id" varchar,
+  "category_id" varchar
+);
+
+CREATE TABLE "dim_thickness_type" (
+  "thickness_id" varchar PRIMARY KEY,
+  "thickness" varchar
 );
 
 CREATE TABLE "customer_info" (
@@ -77,7 +87,11 @@ CREATE TABLE "dim_date" (
   "day" int
 );
 
-ALTER TABLE "book_info" ADD FOREIGN KEY ("category_id") REFERENCES "dim_category" ("category_id");
+ALTER TABLE "bridge_book_category" ADD FOREIGN KEY ("book_id") REFERENCES "book_info" ("book_id");
+
+ALTER TABLE "bridge_book_category" ADD FOREIGN KEY ("category_id") REFERENCES "dim_category" ("category_id");
+
+ALTER TABLE "book_info" ADD FOREIGN KEY ("thickness_id") REFERENCES "dim_thickness_type" ("thickness_id");
 
 ALTER TABLE "customer_info" ADD FOREIGN KEY ("city_id") REFERENCES "dim_city_province" ("city_id");
 

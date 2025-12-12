@@ -21,7 +21,7 @@ def get_data(file_path):
 def insert_on_conflict_nothing(table, conn, keys, data_iter):
     try:
         data = [dict(zip(keys, row)) for row in data_iter]
-        stmt = insert(table.table).values(data).on_conflict_do_nothing(index_elements=["payment_id"])
+        stmt = insert(table.table).values(data).on_conflict_do_nothing(index_elements=["thickness_id"])
         result = conn.execute(stmt)
         return result.rowcount
     
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     }
     connection_string = f"postgresql://{db_config['username']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['db_name']}"
 
-    data_file = 'data_source\Virtual Book Store Project - Thickness Type.csv'
+    data_file = os.getenv('THICKNESS_TYPES_PATH')
     df = get_data(data_file)
 
     table_name = 'dim_thickness_type'
