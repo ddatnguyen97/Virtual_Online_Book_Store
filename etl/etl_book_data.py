@@ -156,7 +156,7 @@ def fetch_book_category(response):
 
             books.append({
                 "book_id": book_id,
-                "categories": ', '.join(categories) if categories else 'N/A',
+                "categories": ', '.join(categories) if categories else 'Uncategorized',
             })
         volume_df = pd.DataFrame(books, index=None)
         return volume_df

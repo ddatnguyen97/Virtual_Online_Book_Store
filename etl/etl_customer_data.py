@@ -24,20 +24,22 @@ def transform_data(df):
         df['customer_phone'] = df['customer_phone'].astype(str)
         df['dob'] = pd.to_datetime(df['dob'], errors='coerce')
         df['city_id'] = df['city_id'].astype(str)
+        today = date.today()
+        df['age'] = df['dob'].apply(
+            lambda x: (
+                today.year - x.year
+                - ((today.month, today.day) < (x.month, x.day))
+            ) if pd.notnull(x) else None
+        )
         return df
     
     except Exception as e:
         logging.error(f"Error transforming data: {e}")
         return pd.DataFrame()
 
-def create_age_group(col):
-    try:
-        today = date.today()
-        age = today.year - col.year
-
-        if (today.month, today.day) < (col.month, col.day):
-            age -= 1
-
+def create_age_group(age):
+        if age is None or pd.isna(age):
+            return None
         if age < 18:
             return "Under 18"
         elif age <= 22:
@@ -46,10 +48,6 @@ def create_age_group(col):
             return "23 - 30"
         else:
             return "Over 30"
-        
-    except Exception as e:
-        logging.error(f"Error creating age group: {e}")
-        return None
 
 def insert_on_conflict_nothing(table, conn, keys, data_iter):
     try:
@@ -90,10 +88,11 @@ if __name__ == "__main__":
     }
     connection_string = f"postgresql://{db_config['username']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['db_name']}"
 
-    file_path = 'data_source\Customer Raw Data.csv'
+    file_path = 'backup_data\customer_list.csv'
+    # file_path = os.getenv('CUSTOMER_DATA_PATH')
     df = get_data(file_path)
     transformed_df = transform_data(df)
-    transformed_df['age_group'] = transformed_df['dob'].apply(create_age_group)
+    transformed_df['age_group'] = transformed_df['age'].apply(create_age_group)
 
     table_name = 'customer_info'
     load_data_to_db(transformed_df, table_name, connection_string)
