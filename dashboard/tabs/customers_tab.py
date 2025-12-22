@@ -65,6 +65,9 @@ def customer_tab(selected_date, connection_string):
                             "order_id",
                             "total_revenue")
     rfm_base["customer_segment"] = rfm_base["rfm_score"].apply(customer_segmentation)
+    if rfm_base.empty:
+        st.warning("RFM analysis is not available for the selected filters.")
+
     avg_recency = rfm_base["recency"].mean()
     avg_frequency = rfm_base["frequency"].mean()
     avg_monetary = rfm_base["monetary"].mean()

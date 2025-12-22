@@ -7,6 +7,7 @@ from utils import *
 from sidebar import *
 from tabs.customers_tab import *
 from tabs.sales_tab import *
+from tabs.products_tab import *
 
 from metrics.customer_metrics import *
 from metrics.sales_metrics import *
@@ -35,7 +36,7 @@ with st.sidebar:
 selected_tab = st.session_state.get("selected_tab", "Sales")
 
 selected_tab = st.radio(
-                "Tabs:",
+                "Contents:",
                 ["Sales", "Customers", "Products"],
                 horizontal=True,
                 index=["Sales", "Customers", "Products"].index(selected_tab),
@@ -50,5 +51,4 @@ elif selected_tab == "Customers":
     customer_tab(selected_date, connection_string)
 
 elif selected_tab == "Products":
-    pass
-    # product_tab(selected_date, connection_string)
+    product_tab(selected_date, connection_string)

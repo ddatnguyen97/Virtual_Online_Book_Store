@@ -86,10 +86,14 @@ def customer_segmentation(rfm_score):
         return "Lost"
     
 def safe_qcut(series, q, labels):
+    if series.empty:
+        return pd.Series([], dtype="int")
+
     ranked = series.rank(method="first")
 
-    try:
-        return pd.qcut(ranked, q, labels=labels, duplicates="drop")
-    except ValueError:
+    if ranked.nunique() < q:
         mid = len(labels) // 2
-        return pd.Series([labels[mid]] * len(series))
+        return pd.Series([labels[mid]] * len(series), index=series.index)
+
+    return pd.qcut(ranked, q, labels=labels, duplicates="drop").astype(int)
+
