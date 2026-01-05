@@ -211,3 +211,19 @@ def create_data_table(df, height=None, column_width=None):
     )
     table.update_layout(height=height)
     return table
+
+def create_scatter_plot(data, x, y, color=None, hover_data=None, size=None, x_label=None, y_label=None, height=None):
+    chart = px.scatter(
+        data,
+        x=x,
+        y=y,
+        color=color,
+        hover_data=hover_data,
+        size=size,
+        height=height
+    )
+    chart.update_layout(
+        xaxis_title=x_label,
+        yaxis_title=y_label,
+    )
+    return chart

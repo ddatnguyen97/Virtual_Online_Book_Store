@@ -136,3 +136,27 @@ def product_tab(selected_date, connection_string):
 
         with col4:
             st.plotly_chart(repeat_metric, key = "products_repeat_rate")
+
+    revenue_quantity_scatter_df = (
+        curr_filtered_df
+        .drop_duplicates(subset=["date", "book_id"])
+        .groupby("book_id", as_index=False)
+        .agg({
+            "total_quantity_sold": "sum",
+            "total_revenue": "sum",
+            "book_name": "first"
+        })
+    )
+
+    revenue_quantity_scatter_plot = create_scatter_plot(
+        revenue_quantity_scatter_df,
+        x="total_quantity_sold",
+        y="total_revenue",
+        hover_data=["book_name"],
+        x_label="Total Quantity Sold",
+        y_label="Total Revenue",
+        height=500
+    )
+
+    with st.container():
+        st.plotly_chart(revenue_quantity_scatter_plot, key="products_revenue_quantity_scatter")
