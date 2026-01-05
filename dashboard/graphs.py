@@ -3,11 +3,14 @@ import plotly.graph_objects as go
 import folium
 from streamlit_folium import st_folium
 
-def create_data_metric(label, current_value=None, previous_value=None):
+def create_data_metric(label, current_value=None, previous_value=None, is_percentage=False):
     if previous_value == 0 or previous_value is None:
         delta_reference = None
     else:
         delta_reference = previous_value
+
+    number_format = ".2%" if is_percentage else ",.2s"
+    delta_format = ".2%" if is_percentage else ".2%"
 
     indicator = go.Indicator(
         mode="number+delta",
@@ -15,13 +18,13 @@ def create_data_metric(label, current_value=None, previous_value=None):
         delta={
                 "reference": delta_reference,
                 "relative": True,
-                "valueformat": ".2%",
+                "valueformat": delta_format,
                 "increasing": {"color": "green"},
                 "decreasing": {"color": "red"},
                 "font": {"size": 35}
                 },
         number={    
-                "valueformat": ",.2s",
+                "valueformat": number_format,
                 "font": {"size": 45}
                 },
         title={
