@@ -202,10 +202,7 @@ def product_tab(selected_date, connection_string):
 
     top_5_repeat_products = (
         repeat_products_filtered_df
-        .groupby(["book_id", "title"], as_index=False)
-        .agg({
-            "repeat_purchase_count": "sum"
-        })
+        .drop_duplicates(subset=["book_id"])
         .sort_values("repeat_purchase_count", ascending=False)
         .head(5)
     )
