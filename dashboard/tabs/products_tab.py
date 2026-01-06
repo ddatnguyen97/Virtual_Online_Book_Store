@@ -137,7 +137,7 @@ def product_tab(selected_date, connection_string):
         with col4:
             st.plotly_chart(repeat_metric, key = "products_repeat_rate")
 
-    revenue_quantity_scatter_df = (
+    revenue_quantity_book_df = (
         curr_filtered_df
         .drop_duplicates(subset=["date", "book_id"])
         .groupby("book_id", as_index=False)
@@ -148,15 +148,76 @@ def product_tab(selected_date, connection_string):
         })
     )
 
-    revenue_quantity_scatter_plot = create_scatter_plot(
-        revenue_quantity_scatter_df,
+    revenue_quantity_book_plot = create_scatter_plot(
+        revenue_quantity_book_df,
         x="total_quantity_sold",
         y="total_revenue",
         hover_data=["book_name"],
         x_label="Total Quantity Sold",
         y_label="Total Revenue",
-        height=500
+        height=400,
+        trendline=True,
+        trendline_color_override="green"
+    )
+
+    revenue_quantity_category_df = (
+        curr_filtered_df
+        .drop_duplicates(subset=["date", "book_id"])
+        .groupby(["category_lv1", "category_lv2", "category_lv3"], as_index=False)
+        .agg({
+            "total_quantity_sold": "sum",
+            "total_revenue": "sum",
+        })
+    )
+
+    revenue_quantity_category_df["avg_revenue_per_unit"] = (
+        revenue_quantity_category_df["total_revenue"] /
+        revenue_quantity_category_df["total_quantity_sold"]
+    )
+
+    revenue_quantity_category_plot = create_scatter_plot(
+        revenue_quantity_category_df,
+        x="total_quantity_sold",
+        y="avg_revenue_per_unit",
+        hover_data=["category_lv1", "category_lv2", "category_lv3"],
+        color="category_lv1",
+        size="total_revenue",
+        x_label="Total Quantity Sold",
+        y_label="AVG Revenue per Unit",
+        height=400
     )
 
     with st.container():
-        st.plotly_chart(revenue_quantity_scatter_plot, key="products_revenue_quantity_scatter")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Revenue vs Quantity Sold per Product")
+            st.plotly_chart(revenue_quantity_book_plot, key="products_revenue_quantity_scatter")
+
+        with col2:
+            st.subheader("Revenue vs Quantity Sold per Category")
+            st.plotly_chart(revenue_quantity_category_plot, key="categories_revenue_quantity_scatter")
+
+    st.divider()
+    st.header("Repeat Purchase Analysis")
+
+    top_5_repeat_products = (
+        repeat_products_filtered_df
+        .groupby(["book_id", "title"], as_index=False)
+        .agg({
+            "repeat_purchase_count": "sum"
+        })
+        .sort_values("repeat_purchase_count", ascending=False)
+        .head(5)
+    )
+    
+    top_5_repeat_products_chart = create_bar_chart(
+        top_5_repeat_products,
+        x="title",
+        y="repeat_purchase_count",
+        height=400,
+        orientation="v",
+    )
+
+    with st.container():
+        st.subheader("Top 5 Repeat Purchase Products")
+        st.plotly_chart(top_5_repeat_products_chart, key="top_5_repeat_products")

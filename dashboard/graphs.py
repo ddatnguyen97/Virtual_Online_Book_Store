@@ -212,7 +212,7 @@ def create_data_table(df, height=None, column_width=None):
     table.update_layout(height=height)
     return table
 
-def create_scatter_plot(data, x, y, color=None, hover_data=None, size=None, x_label=None, y_label=None, height=None):
+def create_scatter_plot(data, x, y, color=None, hover_data=None, size=None, x_label=None, y_label=None, height=None, trendline=False, trendline_color_override=None):
     chart = px.scatter(
         data,
         x=x,
@@ -220,7 +220,9 @@ def create_scatter_plot(data, x, y, color=None, hover_data=None, size=None, x_la
         color=color,
         hover_data=hover_data,
         size=size,
-        height=height
+        height=height,
+        trendline="ols" if trendline else None,
+        trendline_color_override=trendline_color_override
     )
     chart.update_layout(
         xaxis_title=x_label,
