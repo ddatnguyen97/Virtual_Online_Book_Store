@@ -252,6 +252,7 @@ def customer_tab(selected_date, connection_string):
         "customer_count",
         height=400,
     )
+    
     column_width = [80, 120, 60, 100, 60, 60, 60, 60, 140]
     rfm_detail_table = create_data_table(
         rfm_base,

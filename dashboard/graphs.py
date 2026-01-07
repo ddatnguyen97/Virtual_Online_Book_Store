@@ -65,6 +65,7 @@ def create_bar_chart(
     color=None,
     height=None,
     orientation=None,
+    tickangle=None
     ):
 
     chart = px.bar(
@@ -80,12 +81,16 @@ def create_bar_chart(
         xaxis_title=x_label,
         yaxis_title=y_label,
     )
+    chart.update_xaxes(
+        tickangle=tickangle
+    )
 
     if orientation == 'v':
         chart.update_xaxes(
             tickformat="%m-%d" if orientation != "v" else None,
             type="category"
         )
+
     return chart
 
 def create_pie_chart(data, names, values, height=None, hole=None, category_orders=None):

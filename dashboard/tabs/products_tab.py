@@ -200,21 +200,66 @@ def product_tab(selected_date, connection_string):
     st.divider()
     st.header("Repeat Purchase Analysis")
 
-    top_5_repeat_products = (
+    repeat_purchase_category = (
         repeat_products_filtered_df
-        .drop_duplicates(subset=["book_id"])
+        .groupby("category_lv1", as_index=False)
+        .agg({
+            "repeat_purchase_count": "sum",
+            "total_customers": "sum",
+        })
         .sort_values("repeat_purchase_count", ascending=False)
         .head(5)
+    )
+
+    repeat_purchase_category["repeat_purchase_rate"] = (
+        repeat_purchase_category["repeat_purchase_count"] /
+        repeat_purchase_category["total_customers"]
+    )
+
+    repeat_purchase_category_chart = create_bar_chart(
+        repeat_purchase_category,
+        x="category_lv1",
+        y="repeat_purchase_rate",
+        height=400,
+        orientation="v",
+        tickangle=90,
+    )
+
+    top_5_repeat_products = (
+        repeat_products_filtered_df
+        .groupby(["book_id", "title"], as_index=False)
+        .agg({
+            "repeat_purchase_count": "max"  
+        })
+        .sort_values("repeat_purchase_count", ascending=False)
+        .head(5)
+    )
+
+    top_5_repeat_products["title_short"] = (
+        top_5_repeat_products["title"]
+        .str.slice(0, 30)
+        + "..."
     )
     
     top_5_repeat_products_chart = create_bar_chart(
         top_5_repeat_products,
-        x="title",
-        y="repeat_purchase_count",
+        y="title_short",
+        x="repeat_purchase_count",
         height=400,
-        orientation="v",
+        orientation="h",
     )
 
     with st.container():
-        st.subheader("Top 5 Repeat Purchase Products")
-        st.plotly_chart(top_5_repeat_products_chart, key="top_5_repeat_products")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Repeat Purchase Rate per Category")
+            st.plotly_chart(repeat_purchase_category_chart, key="repeat_purchase_category")
+            
+        with col2:
+            st.subheader("Top 5 Repeat Purchase Products")
+            st.plotly_chart(top_5_repeat_products_chart, key="top_5_repeat_products")
+
+    curr_repeat_products_df = repeat_products_df(curr_week_start_date, curr_week_end_date, connection_string)
+    prev_repeat_products_df = repeat_products_df(prev_week_start_date, prev_week_end_date, connection_string)
+
+    

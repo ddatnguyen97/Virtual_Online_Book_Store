@@ -136,7 +136,12 @@ def get_repeat_products_purchase(start_date, end_date, connection_string):
     select
         prp.book_id,
         bi.title,
+        dc.category,
         dc.category_lv1,
+        dc.category_lv2,
+        dc.category_lv3,
+        bi.publisher,
+        dt.thickness,
         prp.total_customers,
         prp.repeat_purchase_count,
         round(
@@ -150,7 +155,9 @@ def get_repeat_products_purchase(start_date, end_date, connection_string):
     left join 
         bridge_book_category bbc on bi.book_id = bbc.book_id
     left join 
-        dim_category dc on bbc.category_id = dc.category_id;
+        dim_category dc on bbc.category_id = dc.category_id
+    join 
+        dim_thickness_type dt on bi.thickness_id = dt.thickness_id
     """
     result = extract_data(query, connection_string)
     return result
