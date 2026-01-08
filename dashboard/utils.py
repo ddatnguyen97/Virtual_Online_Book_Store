@@ -97,3 +97,12 @@ def safe_qcut(series, q, labels):
 
     return pd.qcut(ranked, q, labels=labels, duplicates="drop").astype(int)
 
+def color_delta(val):
+    if pd.isna(val):
+        return ""
+    elif val > 0:
+        return "color: #31C484"
+    elif val < 0:
+        return "color: #ff000d"
+    else:
+        return "color: gray"

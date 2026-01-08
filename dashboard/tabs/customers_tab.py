@@ -253,19 +253,20 @@ def customer_tab(selected_date, connection_string):
         height=400,
     )
     
-    column_width = [80, 120, 60, 100, 60, 60, 60, 60, 140]
-    rfm_detail_table = create_data_table(
-        rfm_base,
-        height=400,
-        column_width=column_width
-    )
+    # column_width = [80, 120, 60, 100, 60, 60, 60, 60, 140]
+    # rfm_detail_table = create_data_table(
+    #     rfm_base,
+    #     height=400,
+    #     column_width=column_width
+    # )
     
     with st.container():
-        col1, col2 = st.columns([0.35, 0.65])
+        col1, col2 = st.columns([0.4, 0.6])
         with col1:
             st.subheader("Customer Segmentation")
             st.plotly_chart(customers_segment_chart, key="customers_segment_bar_chart")
 
         with col2:
             st.subheader("Details")
-            st.plotly_chart(rfm_detail_table, key="rfm_detail_table")
+            # st.plotly_chart(rfm_detail_table, key="rfm_detail_table")
+            st.dataframe(rfm_base, width='stretch')

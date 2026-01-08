@@ -19,8 +19,8 @@ def create_data_metric(label, current_value=None, previous_value=None, is_percen
                 "reference": delta_reference,
                 "relative": True,
                 "valueformat": delta_format,
-                "increasing": {"color": "green"},
-                "decreasing": {"color": "red"},
+                "increasing": {"color": "#2bb179"},
+                "decreasing": {"color": "#ff000d"},
                 "font": {"size": 35}
                 },
         number={    

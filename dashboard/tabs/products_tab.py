@@ -39,7 +39,8 @@ def product_tab(selected_date, connection_string):
     prev_products_df = get_products_summary(prev_week_start_date, prev_week_end_date, connection_string)
 
     repeat_products_df = get_repeat_products_purchase(curr_week_start_date, curr_week_end_date, connection_string)
-
+    prev_repeat_products_df = get_repeat_products_purchase(prev_week_start_date, prev_week_end_date, connection_string)
+    
     columns = [
         "category",
         "category_lv1",
@@ -111,15 +112,22 @@ def product_tab(selected_date, connection_string):
                                 )
     
     repeat_products_filtered_df = apply_filter(repeat_products_df, filters)
+    prev_repeat_products_filtered_df = apply_filter(prev_repeat_products_df, filters)
+
     curr_repeat_rate = safe_divide(
         repeat_products_filtered_df["repeat_purchase_count"].sum(),
         repeat_products_filtered_df["total_customers"].sum()
     )
     
+    prev_repeat_rate = safe_divide(
+        prev_repeat_products_filtered_df["repeat_purchase_count"].sum(),
+        prev_repeat_products_filtered_df["total_customers"].sum()
+    )
+
     repeat_metric = create_data_metric(
                                     "Repeat Purchase Rate",
                                     curr_repeat_rate,
-                                    previous_value=None,
+                                    prev_repeat_rate,
                                     is_percentage=True
                                 )
 
@@ -157,7 +165,7 @@ def product_tab(selected_date, connection_string):
         y_label="Total Revenue",
         height=400,
         trendline=True,
-        trendline_color_override="green"
+        trendline_color_override="#2bb179"
     )
 
     revenue_quantity_category_df = (
@@ -216,6 +224,11 @@ def product_tab(selected_date, connection_string):
         repeat_purchase_category["total_customers"]
     )
 
+    repeat_purchase_category = repeat_purchase_category.sort_values(
+        "repeat_purchase_rate",
+        ascending=False
+    ).reset_index(drop=True)
+
     repeat_purchase_category_chart = create_bar_chart(
         repeat_purchase_category,
         x="category_lv1",
@@ -241,6 +254,11 @@ def product_tab(selected_date, connection_string):
         + "..."
     )
     
+    top_5_repeat_products = top_5_repeat_products.sort_values(
+        "repeat_purchase_count",
+        ascending=False
+    ).reset_index(drop=True)
+
     top_5_repeat_products_chart = create_bar_chart(
         top_5_repeat_products,
         y="title_short",
@@ -259,7 +277,75 @@ def product_tab(selected_date, connection_string):
             st.subheader("Top 5 Repeat Purchase Products")
             st.plotly_chart(top_5_repeat_products_chart, key="top_5_repeat_products")
 
-    curr_repeat_products_df = repeat_products_df(curr_week_start_date, curr_week_end_date, connection_string)
-    prev_repeat_products_df = repeat_products_df(prev_week_start_date, prev_week_end_date, connection_string)
+    curr_repeat_detail = (
+        repeat_products_filtered_df
+        .groupby(["category_lv1"], as_index=False)
+        .agg({
+            "repeat_purchase_count": "sum",
+            "total_customers": "sum"
+        })
+    )
 
-    
+    curr_repeat_detail["repeat_rate_curr"] = (
+        curr_repeat_detail["repeat_purchase_count"] /
+        curr_repeat_detail["total_customers"]
+    )
+
+    prev_repeat_detail = (
+        prev_repeat_products_filtered_df
+        .groupby(["category_lv1"], as_index=False)
+        .agg({
+            "repeat_purchase_count": "sum",
+            "total_customers": "sum"
+        })
+    )
+
+    prev_repeat_detail["repeat_rate_prev"] = (
+        prev_repeat_detail["repeat_purchase_count"] /
+        prev_repeat_detail["total_customers"]
+    )
+
+    repeat_rate_detail_df = (
+        curr_repeat_detail
+        .merge(
+            prev_repeat_detail[["category_lv1", "repeat_rate_prev"]],
+            on="category_lv1",
+            how="left"
+        )
+    )
+
+    repeat_rate_detail_df["repeat_rate_delta"] = (
+        repeat_rate_detail_df["repeat_rate_curr"] -
+        repeat_rate_detail_df["repeat_rate_prev"]
+    )
+
+    repeat_rate_detail_df["trend"] = repeat_rate_detail_df["repeat_rate_delta"].apply(
+        lambda x: "⬆ Improving" if x > 0.01 else
+                "⬇ Declining" if x < -0.01 else
+                "→ Stable"
+    )
+
+    repeat_rate_detail_df = repeat_rate_detail_df.sort_values(
+        "repeat_rate_delta",
+        ascending=False
+    ).reset_index(drop=True)
+
+    styled_repeat_rate_detail_df = (
+        repeat_rate_detail_df[[
+            "category_lv1",
+            "repeat_rate_curr",
+            "repeat_rate_prev",
+            "repeat_rate_delta",
+            "trend"
+        ]]
+        .style
+        .format({
+            "repeat_rate_curr": "{:.2%}",
+            "repeat_rate_prev": "{:.2%}",
+            "repeat_rate_delta": "{:+.2%}"
+        })
+        .map(color_delta, subset=["repeat_rate_delta"])
+    )
+
+    st.subheader("Repeat Purchase Rate – Detailed View")
+    st.dataframe(styled_repeat_rate_detail_df, width='stretch')
