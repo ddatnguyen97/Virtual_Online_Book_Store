@@ -60,8 +60,8 @@ if __name__ == "__main__":
     }
     connection_string = f"postgresql://{db_config['username']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['db_name']}"
 
-    file_path = 'backup_data\order_list.csv'
-    # file_path = os.getenv('ORDER_DATA_PATH')
+    # file_path = 'backup_data\order_list.csv'
+    file_path = os.getenv('ORDER_DATA_PATH')
     raw_df = get_data(file_path)
     # print(raw_df.head())
     transformed_df = transform_data(raw_df)

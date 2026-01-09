@@ -209,7 +209,7 @@ def customer_tab(selected_date, connection_string):
             st.plotly_chart(customers_by_age_group, key = "customers_by_age_group")
         
         with col3:
-            st.subheader("Age Group Contribution")
+            st.subheader("% Contribution")
             st.plotly_chart(revenue_by_age_group_chart, key="revenue_by_age_group")
 
     with st.container():
@@ -267,6 +267,6 @@ def customer_tab(selected_date, connection_string):
             st.plotly_chart(customers_segment_chart, key="customers_segment_bar_chart")
 
         with col2:
-            st.subheader("Details")
+            st.subheader("RFM Score Detailed View")
             # st.plotly_chart(rfm_detail_table, key="rfm_detail_table")
             st.dataframe(rfm_base, width='stretch')

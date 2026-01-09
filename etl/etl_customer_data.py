@@ -23,7 +23,7 @@ def transform_data(df):
     try:
         df['customer_phone'] = df['customer_phone'].astype(str)
         df['dob'] = pd.to_datetime(df['dob'], errors='coerce')
-        df['city_id'] = df['city_id'].astype(str)
+        df['city_id'] = pd.to_numeric(df['city_id'], errors='coerce').astype('Int64').astype(str)
         today = date.today()
         df['age'] = df['dob'].apply(
             lambda x: (
@@ -88,8 +88,8 @@ if __name__ == "__main__":
     }
     connection_string = f"postgresql://{db_config['username']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['db_name']}"
 
-    file_path = 'backup_data\customer_list.csv'
-    # file_path = os.getenv('CUSTOMER_DATA_PATH')
+    # file_path = 'backup_data\customer_list.csv'
+    file_path = os.getenv('CUSTOMER_DATA_PATH')
     df = get_data(file_path)
     transformed_df = transform_data(df)
     transformed_df['age_group'] = transformed_df['age'].apply(create_age_group)

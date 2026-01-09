@@ -25,7 +25,7 @@ def create_data_metric(label, current_value=None, previous_value=None, is_percen
                 },
         number={    
                 "valueformat": number_format,
-                "font": {"size": 45}
+                "font": {"size": 40}
                 },
         title={
                 "text": label,
