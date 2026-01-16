@@ -11,3 +11,12 @@ def get_connection_string():
     db_name = os.getenv('DB_NAME')
 
     return f"postgresql://{username}:{password}@{host}:{port}/{db_name}"
+
+def get_neon_db_connection_string():
+    username = os.getenv('NEON_DB_USER')
+    password = os.getenv('NEON_DB_PASSWORD')
+    host = os.getenv('NEON_DB_HOST')
+    port = os.getenv('NEON_DB_PORT')
+    db_name = os.getenv('NEON_DB_NAME')
+
+    return f"postgresql://{username}:{password}@{host}:{port}/{db_name}?sslmode=require"
