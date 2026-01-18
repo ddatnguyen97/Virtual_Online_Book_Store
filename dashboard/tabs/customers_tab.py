@@ -219,8 +219,18 @@ def customer_tab(selected_date, connection_string):
     st.divider()
     st.header("RFM Analysis")
 
+    with st.sidebar:
+        st.header("RFM Filters")
+        customer_segment_filters = build_filters(
+        rfm_base,
+        ["customer_segment"],
+        "customer_segment"
+    )
+
+    rfm_base_filtered = apply_filter(rfm_base, customer_segment_filters)
+
     rfm_score_histogram_chart = create_histogram_chart(
-                                    rfm_base,
+                                    rfm_base_filtered,
                                     "rfm_score",
                                     nbins=20,
                                     height=250
@@ -237,7 +247,7 @@ def customer_tab(selected_date, connection_string):
         "Lost"
     ]
 
-    customers_grouped_by_segment = rfm_base.groupby("customer_segment").agg(
+    customers_grouped_by_segment = rfm_base_filtered.groupby("customer_segment").agg(
         customer_count=("customers", "nunique")
     ).reset_index()
     customers_grouped_by_segment = customers_grouped_by_segment.sort_values(
@@ -252,14 +262,7 @@ def customer_tab(selected_date, connection_string):
         "customer_count",
         height=400,
     )
-    
-    # column_width = [80, 120, 60, 100, 60, 60, 60, 60, 140]
-    # rfm_detail_table = create_data_table(
-    #     rfm_base,
-    #     height=400,
-    #     column_width=column_width
-    # )
-    
+
     with st.container():
         col1, col2 = st.columns([0.4, 0.6])
         with col1:
@@ -268,5 +271,4 @@ def customer_tab(selected_date, connection_string):
 
         with col2:
             st.subheader("RFM Score Detailed View")
-            # st.plotly_chart(rfm_detail_table, key="rfm_detail_table")
-            st.dataframe(rfm_base, width='stretch')
+            st.dataframe(rfm_base_filtered, width='stretch')

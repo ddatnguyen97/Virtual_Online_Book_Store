@@ -34,16 +34,28 @@ st.title("Virtual Online Book Store Dashboard")
 with st.sidebar:
     selected_date = display_date(connection_string)
 
-selected_tab = st.session_state.get("selected_tab", "Home")
+# selected_tab = st.session_state.get("selected_tab", "Home")
 
-selected_tab = st.radio(
-                "Contents:",
-                ["Home", "Sales", "Customers", "Products"],
-                horizontal=True,
-                index=["Home", "Sales", "Customers", "Products"].index(selected_tab),
-            )
+# selected_tab = st.radio(
+#                 "Contents:",
+#                 ["Home", "Sales", "Customers", "Products"],
+#                 horizontal=True,
+#                 index=["Home", "Sales", "Customers", "Products"].index(selected_tab),
+#             )
+# st.session_state["selected_tab"] = selected_tab
 
-st.session_state["selected_tab"] = selected_tab
+if "selected_tab" not in st.session_state:
+    st.session_state.selected_tab = "Home"
+
+tabs = ["Home", "Sales", "Customers", "Products"]
+
+cols = st.columns(len(tabs))
+
+for col, tab in zip(cols, tabs):
+    with col:
+        if st.button(tab, use_container_width=True):
+            st.session_state.selected_tab = tab
+selected_tab = st.session_state.selected_tab
 
 if selected_tab == "Home":
     home_tab()

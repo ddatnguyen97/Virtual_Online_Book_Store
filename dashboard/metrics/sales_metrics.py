@@ -1,14 +1,14 @@
 from dotenv import load_dotenv
 import logging
 from data import extract_data
-from config.db_connection import get_connection_string
+from config.db_connection import get_connection_string, get_neon_db_connection_string
 from utils import *
 import streamlit as st
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-connection_string = get_connection_string()
+connection_string = get_neon_db_connection_string()
 
 @st.cache_data
 def get_sales_summary(start_date, end_date, connection_string):

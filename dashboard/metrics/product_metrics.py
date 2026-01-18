@@ -1,14 +1,14 @@
 from dotenv import load_dotenv
 import logging
 from data import extract_data
-from config.db_connection import get_connection_string
+from config.db_connection import get_connection_string, get_neon_db_connection_string
 from utils import *
 import streamlit as st
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-connection_string = get_connection_string()
+connection_string = get_neon_db_connection_string()
 
 @st.cache_data
 def get_products_summary(start_date, end_date, connection_string):
@@ -56,54 +56,6 @@ def get_products_summary(start_date, end_date, connection_string):
     """
     result = extract_data(query, connection_string)
     return result
-
-# @st.cache_data
-# def get_repeat_products_purchase(start_date, end_date, connection_string):
-#     query = f"""
-#         with base_product_orders as (
-#             select
-#                 oi.book_id,
-#                 oi.customer_phone,
-#                 sum(oi.order_quantity) as total_quantity
-#             from 
-#                 orders_info oi
-#             join 
-#                 dim_date dd on oi.date_id = dd.date_id
-#             where
-#                 (dd.date >= '{start_date}' and dd.date <= '{end_date}')
-#             group by 
-#                 oi.book_id,
-#                 oi.customer_phone
-#         ),
-#         product_repeat_purchases as (
-#             select
-#                 book_id,
-#                 count(*) as total_customers,
-#                 count(
-#                     case when total_quantity >= 2 then 1 end
-#                 ) as repeat_purchase_count
-#             from 
-#                 base_product_orders
-#             group by 
-#                 book_id
-#         )
-#         select
-#             prp.book_id,
-#             bi.title,
-#             --concat(bi.title, ' - ', coalesce(bi.subtitle, '')) as book_name,
-#             prp.total_customers,
-#             prp.repeat_purchase_count,
-#             round(
-#                 (repeat_purchase_count::numeric 
-#                 / nullif(total_customers, 0)), 2
-#             ) as repeat_rate
-#         from 
-#             product_repeat_purchases prp
-#         join 
-#           book_info bi on prp.book_id = bi.book_id
-#     """
-#     result = extract_data(query, connection_string)
-#     return result
 
 @st.cache_data
 def get_repeat_products_purchase(start_date, end_date, connection_string):
