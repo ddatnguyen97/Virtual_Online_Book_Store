@@ -151,10 +151,7 @@ def sales_tab(selected_date, connection_string):
             st.subheader("Payment Type")
             st.plotly_chart(payment_type_chart, key = "sales_payment")
 
-    city_province_df = pd.read_csv(
-        os.getenv("CITY_PROVINCE_PATH"),
-        encoding="utf-8-sig"
-    )
+    city_province_df = get_city_province(connection_string)
 
     with open(os.getenv("GEO_JSON_PATH"), "r", encoding="utf-8") as f:
         provinces_json = json.load(f)

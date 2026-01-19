@@ -165,9 +165,7 @@ def customer_tab(selected_date, connection_string):
         hole=0.4
     )
 
-    city_province_df = pd.read_csv(
-        os.getenv("CITY_PROVINCE_PATH")
-    )
+    city_province_df = get_city_province(connection_string)
 
     customers_by_city = curr_filtered_df.groupby("city_province")["customers"].nunique().reset_index()
     merged_provinces_df = pd.merge(city_province_df, customers_by_city, left_on="name", right_on="city_province", how="left").reset_index(drop=True)

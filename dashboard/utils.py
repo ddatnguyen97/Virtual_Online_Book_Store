@@ -106,3 +106,13 @@ def color_delta(val):
         return "color: #ff000d"
     else:
         return "color: gray"
+
+def get_city_province(connection_string):
+    query = f"""
+        select
+            name
+        from
+            dim_city_province
+    """
+    result = extract_data(query, connection_string)
+    return result
