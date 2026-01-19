@@ -344,7 +344,7 @@ def product_tab(selected_date, connection_string):
             "repeat_rate_prev": "{:.2%}",
             "repeat_rate_delta": "{:+.2%}"
         })
-        .map(color_delta, subset=["repeat_rate_delta"])
+        .applymap(color_delta, subset=["repeat_rate_delta"])
     )
 
     st.subheader("Repeat Purchase Rate – Detailed View")
